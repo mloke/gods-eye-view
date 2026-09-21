@@ -175,6 +175,14 @@
   gap: 8px;
 }
 
+#command-dock .location-tabs {
+  margin: 0 0 8px;
+}
+
+#command-dock .location-saved-item {
+  border-radius: 6px;
+}
+
 #command-dock .location-search-wrap {
   order: -1;
   flex: 0 1 190px;

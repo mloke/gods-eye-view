@@ -107,12 +107,26 @@ export const ACTION_DESCRIPTIONS = {
   },
   set_context_mode: {
     description:
-      'Enter or exit the Global Context sub-mode used by Contacts and Space Missions. Use Contacts only when the user explicitly requests Contacts, and Space Missions only when explicitly requested. A request to open the parent Context panel alone uses set_panel_open and must not activate either sub-mode. Selecting an aircraft does not imply Context.',
+      'Enter or exit the Global Context sub-mode used by Contacts, Space Missions, and Solar System. Use Contacts only when the user explicitly requests Contacts, Space Missions only when explicitly requested, and Solar System only when the user asks for planets, moons, or the solar system. A request to open the parent Context panel alone uses set_panel_open and must not activate a sub-mode. Selecting an aircraft does not imply Context.',
     $position: 1,
     parameters: {
       properties: {
         mode: {
           description: 'Use off to exit context mode.',
+          $position: 2,
+        },
+      },
+    },
+  },
+  focus_solar_body: {
+    description:
+      'In Solar System context, enter a planet or moon or return to the system overview. Use bodyId "system" to pull back to the heliocentric map. This does not enable Earth traffic or cameras.',
+    $position: 1,
+    parameters: {
+      properties: {
+        bodyId: {
+          description:
+            'Planet, moon, or "system" for the heliocentric overview.',
           $position: 2,
         },
       },

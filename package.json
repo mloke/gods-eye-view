@@ -95,6 +95,15 @@
     "./server/providers/firms": {
       "node": "./server/providers/firms.js"
     },
+    "./server/providers/sdpd": {
+      "node": "./server/providers/sdpd.js"
+    },
+    "./server/providers/location-tags": {
+      "node": "./server/providers/location-tags.js"
+    },
+    "./server/providers/geofences": {
+      "node": "./server/providers/geofences.js"
+    },
     "./server/providers/gbfs": {
       "node": "./server/providers/gbfs.js"
     },
@@ -151,6 +160,9 @@
     "./aircraft": "./src/layers/aircraft/index.js",
     "./layers/vessels": "./src/layers/vessels/index.js",
     "./layers/earthquakes": "./src/layers/earthquakes/index.js",
+    "./layers/sdpd": "./src/layers/sdpd/index.js",
+    "./layers/location-tags": "./src/layers/locationTags/index.js",
+    "./layers/geofence-watch": "./src/layers/geofenceWatch/index.js",
     "./sources/firms-csv": "./src/data/firmsCsv.js",
     "./layers/firms": "./src/layers/firms/index.js",
     "./layers/satellites": "./src/layers/satellites/index.js",
@@ -222,6 +234,9 @@
     "./layers/bikeshare/source": "./src/layers/bikeshare/source.js",
     "./layers/cctv/source": "./src/layers/cctv/source.js",
     "./layers/earthquakes/source": "./src/layers/earthquakes/source.js",
+    "./layers/sdpd/source": "./src/layers/sdpd/source.js",
+    "./layers/location-tags/source": "./src/layers/locationTags/source.js",
+    "./layers/geofence-watch/source": "./src/layers/geofenceWatch/source.js",
     "./layers/firms/source": "./src/layers/firms/source.js",
     "./layers/installations/source": "./src/layers/installations/source.js",
     "./layers/launches/source": "./src/layers/launches/source.js",

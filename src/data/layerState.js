@@ -240,6 +240,7 @@ const OPTION_GROUPS = Object.freeze({
     }),
     integerOption('selectedSatTrackingId', 't', null),
   ]),
+  'solar-system': Object.freeze([stringOption('focusedBodyId', 'b', null)]),
   cctv: Object.freeze([
     enumOption('coverageMode', 'c', 'on', ['off', 'on', 'viewshed'], {
       off: '0',
@@ -249,6 +250,7 @@ const OPTION_GROUPS = Object.freeze({
     booleanOption('showProjection', 'p', true),
     booleanOption('autoHop', 'a', false),
   ]),
+  'sdpd-reports': Object.freeze([integerOption('windowDays', 'w', 7)]),
   radio: Object.freeze([
     Object.freeze({
       key: 'filter',
@@ -337,6 +339,16 @@ export const LAYER_STATE_REGISTRY = Object.freeze([
     disposition: 'enabled+options',
     optionOwner: 'flights',
   }),
+  Object.freeze({
+    id: 'geofence-watch',
+    token: 'y',
+    disposition: 'enabled-only',
+  }),
+  Object.freeze({
+    id: 'home-command',
+    token: '0',
+    disposition: 'enabled-only',
+  }),
   Object.freeze({ id: 'local-dams', token: 'q', disposition: 'enabled-only' }),
   Object.freeze({
     id: 'local-datacenters',
@@ -344,6 +356,11 @@ export const LAYER_STATE_REGISTRY = Object.freeze([
     disposition: 'enabled-only',
   }),
   Object.freeze({ id: 'local-firms', token: 'w', disposition: 'enabled-only' }),
+  Object.freeze({
+    id: 'location-tags',
+    token: 'o',
+    disposition: 'enabled-only',
+  }),
   Object.freeze({
     id: 'military',
     token: 'm',
@@ -376,6 +393,18 @@ export const LAYER_STATE_REGISTRY = Object.freeze([
     token: 's',
     disposition: 'enabled+options',
     optionOwner: 'satellites',
+  }),
+  Object.freeze({
+    id: 'sdpd-reports',
+    token: 'k',
+    disposition: 'enabled+options',
+    optionOwner: 'sdpd-reports',
+  }),
+  Object.freeze({
+    id: 'solar-system',
+    token: 'l',
+    disposition: 'enabled+options',
+    optionOwner: 'solar-system',
   }),
   Object.freeze({
     id: 'telegeography-submarine-cables',

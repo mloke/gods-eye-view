@@ -18,7 +18,12 @@ const ui = readShellSource();
 const css = readStylesheet(new URL('../style.css', import.meta.url));
 
 test('Contacts and Space Missions both participate in the ordinary Tab sequence', () => {
-  for (const id of ['global-context-flights-btn', 'global-context-missions-btn']) {
+  for (const id of [
+    'global-context-flights-btn',
+    'global-context-missions-btn',
+    'global-context-solar-btn',
+    'global-context-command-btn',
+  ]) {
     const button = html.match(new RegExp(`<button id="${id}"[\\s\\S]*?</button>`));
     assert.ok(button, `${id} is missing`);
     assert.match(button[0], /role="tab"/);
@@ -26,7 +31,10 @@ test('Contacts and Space Missions both participate in the ordinary Tab sequence'
   }
 
   const syncSource = _syncContextModeButtons.toString();
-  assert.match(syncSource, /\[\s*this\._globalContextFlightsBtn,\s*this\._globalContextMissionsBtn,?\s*\]/);
+  assert.match(
+    syncSource,
+    /\[\s*this\._globalContextFlightsBtn,\s*this\._globalContextMissionsBtn,\s*this\._globalContextSolarBtn,\s*this\._globalContextCommandBtn,?\s*\]/,
+  );
   assert.match(syncSource, /button\.tabIndex = 0/);
   assert.doesNotMatch(syncSource, /tabIndex\s*=\s*[^;]*\?\s*-1/);
 });
@@ -67,9 +75,13 @@ test('Context transition state preserves focus and Tab availability until settle
     _contextModeChanging: true,
     _globalContextFlightsBtn: contacts,
     _globalContextMissionsBtn: missions,
+    _globalContextSolarBtn: makeButton(),
+    _globalContextCommandBtn: makeButton(),
     _contextModeStandby: {},
     _contextFlightsView: {},
     _contextMissionsView: {},
+    _contextSolarView: {},
+    _contextCommandView: {},
     cockpitView: { syncEntry() {} },
     _syncContactsDetection() {},
     _scheduleRightPanelLayout() {},
@@ -103,13 +115,17 @@ test('Context activation and Clear All never native-disable tabs and guard repea
   const init = _initGlobalContextPanel.toString();
   const select = _selectContextMode.toString();
   const clear = clearSelectedLayers.toString();
-  assert.equal((init.match(/if \(\s*this\.destroyed\s*\|\|\s*this\._contextModeChanging\s*\|\|\s*this\._clearSelectedLayersPromise\s*\)\s*return;/g) || []).length, 2);
-  assert.doesNotMatch(select, /_globalContext(?:Flights|Missions)Btn\.disabled\s*=\s*true/);
-  assert.doesNotMatch(clear, /_globalContext(?:Flights|Missions)Btn\.disabled\s*=\s*true/);
+  assert.equal((init.match(/if \(\s*this\.destroyed\s*\|\|\s*this\._contextModeChanging\s*\|\|\s*this\._clearSelectedLayersPromise\s*\)\s*return;/g) || []).length, 4);
+  assert.doesNotMatch(select, /_globalContext(?:Flights|Missions|Solar|Command)Btn\.disabled\s*=\s*true/);
+  assert.doesNotMatch(clear, /_globalContext(?:Flights|Missions|Solar)Btn\.disabled\s*=\s*true/);
 });
 
 test('Context tablist retains Left, Right, Home, and End keyboard navigation', () => {
   const initSource = _initGlobalContextPanel.toString();
+  assert.match(
+    initSource,
+    /\[\s*this\._globalContextFlightsBtn,\s*this\._globalContextMissionsBtn,\s*this\._globalContextSolarBtn,\s*this\._globalContextCommandBtn,?\s*\]/,
+  );
   assert.match(initSource, /event\.key === 'ArrowRight'/);
   assert.match(initSource, /event\.key === 'ArrowLeft'/);
   assert.match(initSource, /event\.key === 'Home'/);

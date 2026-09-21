@@ -1,10 +1,33 @@
 import * as Cesium from 'cesium';
+import { resolveCameraPitchDeg } from './cameraTiltPolicy.js';
+
+/** Default cold-start camera: Petco Park, San Diego. */
+export const STARTUP_VIEW = Object.freeze({
+  lon: -117.1566,
+  lat: 32.7073,
+  overviewHeightM: 25000,
+  arrivalHeightM: 800,
+  headingDeg: 10,
+  pitchDeg: -30,
+});
 
 /**
  * Camera presets for notable locations.
- * Phase 1 default: fly to Austin, TX on load.
+ * Default startup uses Petco Park via flyToStartupLocation.
  */
 export const CAMERA_PRESETS = {
+  petco: {
+    destination: Cesium.Cartesian3.fromDegrees(
+      STARTUP_VIEW.lon,
+      STARTUP_VIEW.lat,
+      STARTUP_VIEW.arrivalHeightM,
+    ),
+    orientation: {
+      heading: Cesium.Math.toRadians(STARTUP_VIEW.headingDeg),
+      pitch: Cesium.Math.toRadians(STARTUP_VIEW.pitchDeg),
+      roll: 0.0,
+    },
+  },
   austin: {
     destination: Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 800),
     orientation: {
@@ -47,13 +70,16 @@ export function flyToPreset(viewer, presetName, duration = 3.0) {
 }
 
 /**
- * Set camera to Austin on load with a cinematic fly-in.
+ * Set the camera over Petco Park on load with a cinematic fly-in.
  * @returns {Function} Cancels the pending or active startup flight.
  */
-export function flyToAustin(viewer) {
-  // Start from a high altitude, then fly down
+export function flyToStartupLocation(viewer) {
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 25000),
+    destination: Cesium.Cartesian3.fromDegrees(
+      STARTUP_VIEW.lon,
+      STARTUP_VIEW.lat,
+      STARTUP_VIEW.overviewHeightM,
+    ),
     orientation: {
       heading: Cesium.Math.toRadians(0),
       pitch: Cesium.Math.toRadians(-90),
@@ -61,14 +87,19 @@ export function flyToAustin(viewer) {
     },
   });
 
-  // Cinematic fly-in after a brief pause
   const timer = setTimeout(() => {
     if (viewer.isDestroyed()) return;
     viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(-97.7431, 30.2672, 600),
+      destination: Cesium.Cartesian3.fromDegrees(
+        STARTUP_VIEW.lon,
+        STARTUP_VIEW.lat,
+        STARTUP_VIEW.arrivalHeightM,
+      ),
       orientation: {
-        heading: Cesium.Math.toRadians(15),
-        pitch: Cesium.Math.toRadians(-30),
+        heading: Cesium.Math.toRadians(STARTUP_VIEW.headingDeg),
+        pitch: Cesium.Math.toRadians(
+          resolveCameraPitchDeg(STARTUP_VIEW.pitchDeg),
+        ),
         roll: 0.0,
       },
       duration: 4.0,
@@ -79,4 +110,9 @@ export function flyToAustin(viewer) {
     clearTimeout(timer);
     if (!viewer.isDestroyed()) viewer.camera.cancelFlight();
   };
+}
+
+/** @deprecated Use flyToStartupLocation. */
+export function flyToAustin(viewer) {
+  return flyToStartupLocation(viewer);
 }

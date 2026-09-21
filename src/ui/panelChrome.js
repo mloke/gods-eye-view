@@ -10,6 +10,7 @@ const SHARE_PANEL_STATE_SPECS = Object.freeze([
   { id: 'control-panel', pinnable: true },
   { id: 'location-bar', pinnable: true },
   { id: 'data-panel' },
+  { id: 'watch-panel' },
   { id: 'cctv-panel' },
   { id: 'radio-panel' },
   { id: 'scene-panel' },

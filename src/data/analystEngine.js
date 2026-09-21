@@ -61,6 +61,22 @@ export const ANALYST_LAYERS = {
     text: ['place'],
     flags: [],
   },
+  'sdpd-reports': {
+    numeric: [],
+    text: [
+      'offense',
+      'category',
+      'neighborhood',
+      'blockAddress',
+      'crimeAgainst',
+    ],
+    flags: ['violent', 'property'],
+  },
+  'location-tags': {
+    numeric: [],
+    text: ['name', 'tags', 'note'],
+    flags: [],
+  },
 };
 
 const EARTH_R_KM = 6371;

@@ -19,6 +19,11 @@ import {
 } from '../data/contextStore.js';
 import { CCTV_FOCUS_RESULT } from '../layers/cctv/index.js';
 import { contextModeWord } from '../contextModePolicy.js';
+import { isSolarSystemRegimeActive } from '../solarSystem/sceneRegime.js';
+import { getSolarBody } from '../solarSystem/bodies.js';
+import { formatPlanetaryData } from '../solarSystem/planetaryData.js';
+import { assetsForBody } from '../data/planetaryAssets.js';
+import { flyToSolarOverview } from '../layers/solarSystem/rendering.js';
 import { createAnalystEngine } from '../data/analystEngine.js';
 import { layerFeedState } from '../data/feedState.js';
 import {
@@ -67,6 +72,9 @@ const PANEL_ALIASES = new Map([
   ['context right panel', 'global-context-panel'],
   ['scenes', 'scene-panel'],
   ['scene', 'scene-panel'],
+  ['watch', 'watch-panel'],
+  ['geofence watch', 'watch-panel'],
+  ['alerts', 'watch-panel'],
   ['post processing', 'pp-toggles'],
   ['hud controls', 'pp-toggles'],
   ['map stack', 'control-panel'],
@@ -84,6 +92,7 @@ const PANEL_IDS = new Set([
   'radio-panel',
   'global-context-panel',
   'scene-panel',
+  'watch-panel',
   'pp-toggles',
 ]);
 const CONTEXT_MODE_ALIASES = new Map([
@@ -98,6 +107,16 @@ const CONTEXT_MODE_ALIASES = new Map([
   ['space mission', 'space-missions'],
   ['space-missions', 'space-missions'],
   ['missions', 'space-missions'],
+  ['solar system', 'solar-system'],
+  ['solar-system', 'solar-system'],
+  ['solarsystem', 'solar-system'],
+  ['planets', 'solar-system'],
+  ['command', 'home-command'],
+  ['home-command', 'home-command'],
+  ['home command', 'home-command'],
+  ['homealone', 'home-command'],
+  ['home alone', 'home-command'],
+  ['home', 'home-command'],
 ]);
 /**
  * Every model-readable field that carries a context-mode id, and what an
@@ -221,6 +240,19 @@ const LAYER_ALIASES = new Map([
   ['license plate readers', 'alpr-cameras'],
   ['license plate cameras', 'alpr-cameras'],
   ['plate readers', 'alpr-cameras'],
+  ['sdpd', 'sdpd-reports'],
+  ['sdpd reports', 'sdpd-reports'],
+  ['san diego crime', 'sdpd-reports'],
+  ['san diego police', 'sdpd-reports'],
+  ['police reports', 'sdpd-reports'],
+  ['location tags', 'location-tags'],
+  ['personal tags', 'location-tags'],
+  ['my places', 'location-tags'],
+  ['my tags', 'location-tags'],
+  ['geofence', 'geofence-watch'],
+  ['geofence watch', 'geofence-watch'],
+  ['watch zone', 'geofence-watch'],
+  ['alerts', 'geofence-watch'],
 ]);
 
 const CITY_ALIASES = new Map([
@@ -914,7 +946,67 @@ export function createGevActionRunner({
       };
     }
 
+    if (name === 'focus_solar_body') {
+      const bodyId = String(args.bodyId || args.body || '')
+        .trim()
+        .toLowerCase();
+      if (!bodyId) throw new Error('A solar-system body is required');
+      if (!styleManager?.setContextMode) {
+        return {
+          ok: false,
+          action: 'focus_solar_body',
+          error: 'Context mode control unavailable',
+        };
+      }
+      const context = await styleManager.setContextMode('solar-system', {
+        signal: runOptions.signal,
+        isCurrent: runOptions.isCurrent,
+      });
+      if (context?.ok !== true) {
+        return {
+          ok: false,
+          action: 'focus_solar_body',
+          error: context?.error || 'Solar System context could not start',
+          context,
+        };
+      }
+      const layer = dataManager?.layers?.get('solar-system')?.module;
+      if (bodyId === 'system' || bodyId === 'sun') {
+        layer?.focusSystem?.();
+        return { ok: true, action: 'focus_solar_body', bodyId: 'system' };
+      }
+      if (!getSolarBody(bodyId)) {
+        return {
+          ok: false,
+          action: 'focus_solar_body',
+          error: `Unknown solar body: ${bodyId}`,
+        };
+      }
+      const focused = layer?.focusBody?.(bodyId);
+      return {
+        ok: focused !== false,
+        action: 'focus_solar_body',
+        bodyId,
+        planetaryData: formatPlanetaryData(bodyId),
+        assets: assetsForBody(bodyId).map((asset) => ({
+          id: asset.id,
+          name: asset.name,
+          kind: asset.kind,
+          asOf: asset.asOf,
+          note: asset.note,
+        })),
+      };
+    }
+
     if (name === 'fly_to_location') {
+      if (isSolarSystemRegimeActive()) {
+        return {
+          ok: false,
+          action: 'fly_to_location',
+          error:
+            'Earth place search is unavailable in Solar System. Exit the tab or use focus_solar_body.',
+        };
+      }
       return flyToRequestedLocation(viewer, args, {
         placeSearch,
         searchNavigation,
@@ -949,6 +1041,14 @@ export function createGevActionRunner({
     }
 
     if (name === 'zoom_to_globe') {
+      if (isSolarSystemRegimeActive()) {
+        flyToSolarOverview(viewer);
+        return {
+          ok: true,
+          action: 'zoom_to_globe',
+          view: 'solar-system',
+        };
+      }
       if (typeof styleManager?.resetToGlobeView === 'function') {
         return styleManager.resetToGlobeView();
       }
@@ -1056,6 +1156,14 @@ export function createGevActionRunner({
     }
 
     if (name === 'set_map_stack') {
+      if (isSolarSystemRegimeActive()) {
+        return {
+          ok: false,
+          action: 'set_map_stack',
+          error:
+            'Earth map stacks stay hidden in Solar System. Exit the tab to change basemaps.',
+        };
+      }
       const stackId = normalizeStackId(args.stack);
       if (!stackId)
         throw new Error(`Unknown map stack: ${args.stack || 'missing'}`);
@@ -2419,6 +2527,13 @@ export async function getBasemapLabelContext(
   service = defaultGeospatial,
   { cachedOnly = false } = {},
 ) {
+  if (isSolarSystemRegimeActive()) {
+    return {
+      placeLabels: [],
+      streetLabels: [],
+      nearbyPlaceLabels: [],
+    };
+  }
   const { reverseGeocodeCache, nearbyPlacesCache } = cachesFor(service);
   const samples = sampleViewportCartographics(viewer);
   const cameraHeightM = viewer.camera.positionCartographic.height;
@@ -3459,6 +3574,7 @@ async function getBasemapContext(
 }
 
 function classifyViewScale(cameraHeightM) {
+  if (isSolarSystemRegimeActive()) return 'solar-system';
   if (cameraHeightM > 12000000) return 'global';
   if (cameraHeightM > 3000000) return 'continental';
   if (cameraHeightM > 750000) return 'regional';
@@ -3468,14 +3584,17 @@ function classifyViewScale(cameraHeightM) {
 }
 
 function shouldReverseGeocode(cameraHeightM) {
+  if (isSolarSystemRegimeActive()) return false;
   return cameraHeightM <= 750000;
 }
 
 function shouldReverseGeocodeViewport(cameraHeightM) {
+  if (isSolarSystemRegimeActive()) return false;
   return cameraHeightM <= 3000000;
 }
 
 function shouldFetchNearbyPlaces(cameraHeightM) {
+  if (isSolarSystemRegimeActive()) return false;
   return cameraHeightM <= 25000;
 }
 
@@ -4090,6 +4209,9 @@ function layerTitle(layerId) {
   if (layerId === 'local-dams') return 'Dam';
   if (layerId === 'telegeography-submarine-cables') return 'Submarine Cable';
   if (layerId === 'local-firms') return 'Active Fire';
+  if (layerId === 'sdpd-reports') return 'SDPD Report';
+  if (layerId === 'location-tags') return 'Tagged Place';
+  if (layerId === 'geofence-watch') return 'Watch Event';
   return layerId || 'Entity';
 }
 

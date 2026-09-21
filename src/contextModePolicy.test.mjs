@@ -184,6 +184,14 @@ test('only explicit user-owned shell enables capture a Context restoration snaps
   assert.equal(shouldCaptureContextSession({ ...userMissionEnable, origin: 'context-restore' }), false);
   assert.equal(shouldCaptureContextSession({ ...userMissionEnable, enabled: false }), false);
   assert.equal(shouldCaptureContextSession({ ...userMissionEnable, layerId: 'satellites' }), false);
+  assert.equal(
+    shouldCaptureContextSession({ ...userMissionEnable, layerId: 'solar-system' }),
+    true,
+  );
+  assert.equal(
+    shouldCaptureContextSession({ ...userMissionEnable, layerId: 'home-command' }),
+    true,
+  );
 });
 
 test('voice dependency OFF exits Space Missions like the equivalent UI action', () => {
@@ -235,6 +243,15 @@ test('a rapid re-entry snapshots the settled restore target, not partial manager
     ['satellites'],
     'the synchronous entry intent is not part of the pre-entry snapshot',
   );
+  assert.deepEqual(
+    [...contextSnapshotLayerIds(
+      new Set(['solar-system', 'cctv']),
+      null,
+      ['solar-system'],
+    )],
+    ['cctv'],
+    'enabling Solar System snapshots Earth layers so they can return on exit',
+  );
 });
 
 test('Space Missions blocks unrelated layer enables before replay data can mix', () => {
@@ -243,6 +260,38 @@ test('Space Missions blocks unrelated layer enables before replay data can mix',
     contextLayerEnableBlockReason({ contextMode: 'space-missions', change, layerName: 'Live Flights' }),
     /Exit the mode to enable Live Flights/,
   );
+  assert.match(
+    contextLayerEnableBlockReason({
+      contextMode: 'solar-system',
+      change,
+      layerName: 'Cameras',
+    }),
+    /Solar System isolates planetary data. Exit the mode to enable Cameras/,
+  );
+  assert.match(
+    contextLayerEnableBlockReason({
+      contextMode: 'solar-system',
+      change: { ...change, layerId: 'cctv' },
+      layerName: 'Cameras',
+    }),
+    /Solar System isolates planetary data. Exit the mode to enable Cameras/,
+  );
+  assert.match(
+    contextLayerEnableBlockReason({
+      contextMode: 'home-command',
+      change,
+      layerName: 'Live Flights',
+    }),
+    /Command isolates the local site view. Exit the mode to enable Live Flights/,
+  );
+  assert.equal(contextLayerEnableBlockReason({
+    contextMode: 'solar-system',
+    change: { ...change, layerId: 'solar-system' },
+  }), null);
+  assert.equal(contextLayerEnableBlockReason({
+    contextMode: 'home-command',
+    change: { ...change, layerId: 'home-command' },
+  }), null);
   assert.equal(contextLayerEnableBlockReason({
     contextMode: 'space-missions',
     change: { ...change, layerId: 'satellites' },
@@ -280,7 +329,7 @@ test('manually disabling a mode dependency exits that Context bundle', () => {
 });
 
 test('Radio remains an independent companion across Context transitions', () => {
-  for (const contextMode of ['flights', 'space-missions']) {
+  for (const contextMode of ['flights', 'space-missions', 'solar-system', 'home-command']) {
     for (const enabled of [true, false]) {
       assert.equal(shouldExitContextForLayerChange({
         contextMode,
@@ -305,6 +354,14 @@ test('each Context mode exposes only its shell and dependencies', () => {
   assert.deepEqual(
     [...contextAllowedLayerIds('space-missions')],
     ['rocket-launches', 'satellites', 'radio'],
+  );
+  assert.deepEqual(
+    [...contextAllowedLayerIds('solar-system')],
+    ['solar-system', 'radio'],
+  );
+  assert.deepEqual(
+    [...contextAllowedLayerIds('home-command')],
+    ['home-command', 'radio'],
   );
 });
 

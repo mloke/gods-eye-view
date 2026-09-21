@@ -2,6 +2,7 @@
  * One-click camera transfer for layer-owned world targets.
  */
 import * as Cesium from 'cesium';
+import { resolveCameraPitchDeg } from './cameraTiltPolicy.js';
 
 export const WORLD_FOCUS_REQUEST_EVENT = 'gev:world-request-focus';
 export const WORLD_CLICK_FOCUS_DURATION_SEC = 1.9;
@@ -85,7 +86,7 @@ export function flyToWorldTarget(viewer, target = {}) {
     {
       offset: new Cesium.HeadingPitchRange(
         heading,
-        Cesium.Math.toRadians(framing.pitchDeg),
+        Cesium.Math.toRadians(resolveCameraPitchDeg(framing.pitchDeg)),
         framing.rangeM,
       ),
       duration,

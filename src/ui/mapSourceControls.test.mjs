@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createMapSourceControls } from './mapSourceControls.js';
+import {
+  enterSolarSystemOverview,
+  resetSceneRegimeForTest,
+} from '../solarSystem/sceneRegime.js';
 
 function makeElement(tagName = 'div') {
   const element = {
@@ -249,4 +253,23 @@ test('completion after destruction cannot paint or notify', async () => {
   assert.equal(f.calls.length, count);
   assert.equal(f.statusElement.textContent, label);
   assert.equal(await f.controls.select('osm'), null);
+});
+
+test('Solar System regime does not request Earth map stacks', async () => {
+  resetSceneRegimeForTest();
+  const f = fixture();
+  try {
+    enterSolarSystemOverview({
+      scene: {
+        globe: { show: true },
+        primitives: { length: 0, get() { return null; } },
+      },
+    });
+    const state = await f.controls.select('esri-imagery');
+    assert.equal(state.activeId, 'osm');
+    assert.deepEqual(f.requests, []);
+  } finally {
+    resetSceneRegimeForTest();
+    f.controls.destroy();
+  }
 });

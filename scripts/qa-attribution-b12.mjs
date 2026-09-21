@@ -63,6 +63,7 @@ const REQUIRED_CREDIT_SUBSTRINGS = [
   'NASA FIRMS',                  // fires
   'CelesTrak',                   // satellites
   'U.S. Geological Survey',      // earthquakes
+  'San Diego Police Department', // SDPD NIBRS reports
   'OpenSky Network',             // flights
   'AISStream',                   // vessels
   'City of Austin',              // CCTV

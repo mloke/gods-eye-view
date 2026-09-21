@@ -10,6 +10,15 @@ function node() {
     listeners: new Map(),
     className: '',
     textContent: '',
+    hidden: false,
+    style: {},
+    attributes: new Map(),
+    setAttribute(name, value) {
+      this.attributes.set(name, String(value));
+    },
+    getAttribute(name) {
+      return this.attributes.get(name);
+    },
     classList: {
       add: (...names) => names.forEach((name) => classes.add(name)),
       remove: (...names) => names.forEach((name) => classes.delete(name)),
@@ -67,6 +76,11 @@ function fixture() {
     resetButtons: [node(), node()],
     statusCity: node(),
     statusPoi: node(),
+    tabCities: node(),
+    tabSaved: node(),
+    citiesView: node(),
+    savedView: node(),
+    savedList: node(),
   };
   const doc = node();
   doc.createElement = node;
@@ -87,6 +101,8 @@ function fixture() {
     onPoi: (id, index) => calls.push(['poi', id, index]),
     onSearch: (query) => calls.push(['search', query]),
     onReset: () => calls.push(['reset']),
+    onTab: (tab) => calls.push(['tab', tab]),
+    onSavedPlace: (id) => calls.push(['saved', id]),
     doc,
     requestFrame: (fn) => {
       const id = next++;
@@ -136,6 +152,7 @@ test('destruction revokes document, search, reset, city and POI actions and remo
   f.elements.search.fire('keydown', { key: 'Enter' });
   f.doc.fire('keydown', { key: 'Q' });
   f.elements.resetButtons[0].fire('click');
+  f.elements.tabSaved.fire('click');
   f.frames.get(0)();
   assert.deepEqual(f.calls, []);
   assert.equal(f.doc.body.children.length, 0);
@@ -146,4 +163,48 @@ test('location and POI keys route once while form controls retain typing', () =>
   f.doc.fire('keydown', { key: 'Q', target: { matches: () => true } });
   f.elements.resetButtons[1].fire('click');
   assert.deepEqual(f.calls, [['poi', 'a', 1], ['reset']]);
+});
+test('the Saved tab hides cities and lists personal places', () => {
+  const f = fixture();
+  f.elements.tabSaved.fire('click');
+  f.controls.setTab('saved');
+  assert.deepEqual(f.calls, [['tab', 'saved']]);
+  assert.equal(f.elements.tabSaved.classList.contains('active'), true);
+  assert.equal(f.elements.tabCities.classList.contains('active'), false);
+  assert.equal(f.elements.citiesView.hidden, true);
+  assert.equal(f.elements.savedView.hidden, false);
+  f.controls.renderSavedPlaces([
+    {
+      stableId: 'petco-park',
+      name: 'Petco Park',
+      tags: ['ballpark'],
+      color: '#f0a63c',
+    },
+  ]);
+  f.controls.setSavedCount(1);
+  assert.equal(f.elements.tabSaved.textContent, 'Saved · 1');
+  assert.equal(f.elements.savedList.children[0].dataset.placeId, 'petco-park');
+  f.elements.savedList.children[0].fire('click');
+  assert.deepEqual(f.calls, [
+    ['tab', 'saved'],
+    ['saved', 'petco-park'],
+  ]);
+  f.controls.highlightSavedPlace('petco-park');
+  assert.equal(f.elements.savedList.children[0].classList.contains('active'), true);
+});
+test('POI keys stay quiet while the Saved tab is showing', () => {
+  const f = fixture();
+  f.controls.setTab('saved');
+  f.doc.fire('keydown', { key: 'Q', target: { matches: () => false } });
+  assert.deepEqual(f.calls, []);
+});
+test('replacing saved places removes old click actions', () => {
+  const f = fixture();
+  f.controls.renderSavedPlaces([{ stableId: 'a', name: 'A', tags: [] }]);
+  const old = f.elements.savedList.children[0];
+  f.controls.renderSavedPlaces([{ stableId: 'b', name: 'B', tags: [] }]);
+  old.fire('click');
+  assert.deepEqual(f.calls, []);
+  f.elements.savedList.children[0].fire('click');
+  assert.deepEqual(f.calls, [['saved', 'b']]);
 });

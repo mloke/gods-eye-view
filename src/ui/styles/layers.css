@@ -268,13 +268,19 @@
   box-sizing: border-box;
 }
 #right-context-rail #context-missions-view:not([hidden]),
+#right-context-rail #context-solar-view:not([hidden]),
 #right-context-rail #space-mission-panel-host,
-#right-context-rail .space-mission-roster {
+#right-context-rail #solar-system-panel-host,
+#right-context-rail .space-mission-roster,
+#right-context-rail .solar-system-roster {
   min-height: 0;
 }
 #right-context-rail.layout-focus #context-missions-view:not([hidden]),
+#right-context-rail.layout-focus #context-solar-view:not([hidden]),
 #right-context-rail.layout-focus #space-mission-panel-host,
-#right-context-rail.layout-focus .space-mission-roster {
+#right-context-rail.layout-focus #solar-system-panel-host,
+#right-context-rail.layout-focus .space-mission-roster,
+#right-context-rail.layout-focus .solar-system-roster {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -452,6 +458,153 @@
     monospace;
   letter-spacing: 0.08em;
   text-align: center;
+}
+#solar-system-panel-host .solar-system-roster-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+#solar-system-panel-host .solar-system-roster-header strong {
+  display: block;
+  font: 9px/1.3 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  color: #eaffff;
+}
+#solar-system-panel-host .solar-system-roster-header span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(190, 230, 230, 0.58);
+  font: 7px/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+}
+#solar-system-panel-host .solar-system-roster-header output {
+  color: rgba(122, 215, 255, 0.85);
+  font: 10px/1 'JetBrains Mono', monospace;
+}
+#solar-system-panel-host .solar-system-back {
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 7px 8px;
+  border: 1px solid rgba(98, 181, 255, 0.35);
+  border-radius: 6px;
+  color: #8fcfff;
+  background: rgba(42, 113, 171, 0.12);
+  font: 8px/1.2 var(--font-mono);
+  letter-spacing: 0.09em;
+  cursor: pointer;
+}
+#solar-system-panel-host .solar-system-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+}
+#solar-system-panel-host .solar-system-roster-item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid rgba(98, 181, 255, 0.18);
+  border-radius: 6px;
+  color: #d8f6ff;
+  background: rgba(20, 46, 72, 0.35);
+  text-align: left;
+  cursor: pointer;
+}
+#solar-system-panel-host .solar-system-roster-item.active,
+#solar-system-panel-host .solar-system-roster-item:hover,
+#solar-system-panel-host .solar-system-roster-item:focus-visible {
+  border-color: rgba(0, 212, 255, 0.55);
+  background: rgba(0, 212, 255, 0.1);
+}
+#solar-system-panel-host .solar-system-roster-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--solar-body-color, #8fcfff);
+}
+#solar-system-panel-host .solar-system-roster-copy strong,
+#solar-system-panel-host .solar-system-roster-copy small {
+  display: block;
+}
+#solar-system-panel-host .solar-system-roster-copy strong {
+  font: 9px/1.25 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+}
+#solar-system-panel-host .solar-system-roster-copy small {
+  color: rgba(190, 230, 230, 0.55);
+  font: 7px/1.3 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#solar-system-panel-host .solar-system-subhead {
+  margin: 10px 0 4px;
+  color: rgba(190, 230, 230, 0.62);
+  font: 7px/1.3 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+}
+#solar-system-panel-host .solar-system-facts {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+#solar-system-panel-host .solar-system-facts div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid rgba(98, 181, 255, 0.12);
+  border-radius: 5px;
+}
+#solar-system-panel-host .solar-system-facts dt {
+  margin: 0;
+  color: rgba(190, 230, 230, 0.55);
+  font: 7px/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#solar-system-panel-host .solar-system-facts dd {
+  margin: 0;
+  color: #eaffff;
+  font: 8px/1.4 'JetBrains Mono', monospace;
+}
+#solar-system-panel-host .solar-system-facts-source {
+  margin: 0 0 8px;
+  color: rgba(190, 230, 230, 0.45);
+  font: 7px/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+}
+#solar-system-panel-host .solar-system-asset-list {
+  margin: 0;
+  padding: 0;
+  max-height: 42vh;
+  overflow: auto;
+  list-style: none;
+}
+#solar-system-panel-host .solar-system-asset-list li {
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(98, 181, 255, 0.12);
+  border-radius: 6px;
+}
+#solar-system-panel-host .solar-system-asset-list strong,
+#solar-system-panel-host .solar-system-asset-list small,
+#solar-system-panel-host .solar-system-asset-list span {
+  display: block;
+}
+#solar-system-panel-host .solar-system-asset-list strong {
+  font: 8px/1.3 'JetBrains Mono', monospace;
+  color: #eaffff;
+}
+#solar-system-panel-host .solar-system-asset-list small,
+#solar-system-panel-host .solar-system-asset-list span {
+  color: rgba(190, 230, 230, 0.55);
+  font: 7px/1.4 'JetBrains Mono', monospace;
 }
 #space-mission-panel .space-mission-view-header {
   display: flex;

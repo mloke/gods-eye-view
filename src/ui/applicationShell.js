@@ -18,8 +18,11 @@ import { RadioControls } from './radio.js';
 import { LocationNavigation } from './locationNavigation.js';
 import { bindClearLayersControl } from './layers.js';
 import { bindCameraOrientationControls } from './cameraOrientationControls.js';
+import { installLocationTagCopy } from '../layers/locationTags/copy.js';
+import { bindGeofenceWatchPanel } from '../layers/geofenceWatch/panel.js';
 import { createMapSourceControls } from './mapSource.js';
 import { STYLES } from './effects.js';
+import { isSolarSystemRegimeActive } from '../solarSystem/sceneRegime.js';
 
 import * as Cesium from 'cesium';
 
@@ -281,6 +284,8 @@ export class StyleManager extends ShellFacade {
         trafficLayer: services.trafficLayer,
         flyToPresetLocation: services.flyToPresetLocation,
         flyToPOI: services.flyToPOI,
+        flyToLandmark: services.flyToLandmark,
+        loadSavedPlaces: services.loadSavedPlaces,
         GLOBE_VIEW: services.GLOBE_VIEW,
         flyToGlobeView: services.flyToGlobeView,
         interruptCameraMotion: services.interruptCameraMotion,
@@ -295,6 +300,11 @@ export class StyleManager extends ShellFacade {
         _locationPills: this._locationPills,
         _poiRow: this._poiRow,
         _locationBarDivider: this._locationBarDivider,
+        _locationTabCities: this._locationTabCities,
+        _locationTabSaved: this._locationTabSaved,
+        _locationCitiesView: this._locationCitiesView,
+        _locationSavedView: this._locationSavedView,
+        _locationSavedList: this._locationSavedList,
         _locationSearch: this._locationSearch,
         _searchToggle: this._searchToggle,
         _resetGlobeBtn: this._resetGlobeBtn,
@@ -536,9 +546,11 @@ export class StyleManager extends ShellFacade {
     this._initRightPanelAdaptiveLayout();
     this._initRadioPanel();
     this._initCctvPanel();
+    this._initGeofenceWatchPanel();
     this._initGlobalContextPanel();
     this._initLocationBar();
     this._initShareButton();
+    this._initLocationTagCopy();
     this._initCameraOrientationControls();
     this._initClearSelectedLayersButton();
     this._initHUDToggle();
@@ -759,9 +771,13 @@ export class StyleManager extends ShellFacade {
         _globalContextPanel: document.getElementById('global-context-panel'),
         _globalContextFlightsBtn: this._globalContextFlightsBtn,
         _globalContextMissionsBtn: this._globalContextMissionsBtn,
+        _globalContextSolarBtn: this._globalContextSolarBtn,
+        _globalContextCommandBtn: this._globalContextCommandBtn,
         _contextModeStandby: this._contextModeStandby,
         _contextFlightsView: this._contextFlightsView,
         _contextMissionsView: this._contextMissionsView,
+        _contextSolarView: this._contextSolarView,
+        _contextCommandView: this._contextCommandView,
         _installationsSearchBtn: this._installationsSearchBtn,
       },
       installations: militaryInstallationsLayer,
@@ -873,6 +889,42 @@ export class StyleManager extends ShellFacade {
     const cameraId = activate();
     if (!cameraId) return false;
     return this._runExplicitNavigation('camera', () => focus(cameraId));
+  }
+
+  /** Bind the WATCH tray to the geofence layer and fly logged events. */
+  _initGeofenceWatchPanel() {
+    const { geofenceWatchLayer, flyToLandmark } = this.services;
+    this._geofenceWatchPanel?.destroy();
+    if (!geofenceWatchLayer) return;
+    this._geofenceWatchPanel = bindGeofenceWatchPanel({
+      layer: geofenceWatchLayer,
+      elements: {
+        list: this._watchList,
+        status: this._watchStatus,
+        clearButton: this._watchClearBtn,
+        watchButton: this._watchEnableBtn,
+        drawButton: this._watchDrawBtn,
+        nameInput: this._watchZoneName,
+        hint: this._watchDrawHint,
+        fences: this._watchFences,
+      },
+      isEnabled: () => this._dataManager?.isEnabled('geofence-watch') === true,
+      setEnabled: async (enabled) => {
+        await this._dataManager?.setEnabled('geofence-watch', enabled);
+        this._geofenceWatchPanel?.render();
+      },
+      flyToEvent: (event) => {
+        if (!Number.isFinite(event?.lat) || !Number.isFinite(event?.lon))
+          return;
+        flyToLandmark?.(this.viewer, event.lat, event.lon, {
+          range: 800,
+          pitch: -30,
+          heading: 0,
+          duration: 1.8,
+        });
+      },
+      showToast: (message) => this._showToast(message),
+    });
   }
 
   /** Compose camera panel controls from the existing camera port and application actions. */
@@ -1086,6 +1138,13 @@ export class StyleManager extends ShellFacade {
    * @returns {Promise<{ok: boolean, activeStack?: string, error?: string|null, available?: string[]}>}
    */
   async setMapStack(stackId) {
+    if (isSolarSystemRegimeActive()) {
+      return {
+        ok: false,
+        error:
+          'Earth map stacks stay hidden in Solar System. Exit the tab to change basemaps.',
+      };
+    }
     if (!this.mapStackController) {
       return { ok: false, error: 'Map stack controller unavailable' };
     }
@@ -1375,6 +1434,15 @@ export class StyleManager extends ShellFacade {
     });
   }
 
+  /** Right-click the globe to copy a personal-tags JSON snippet. */
+  _initLocationTagCopy() {
+    this._locationTagCopy?.destroy();
+    this._locationTagCopy = installLocationTagCopy({
+      viewer: this.viewer,
+      showToast: (message) => this._showToast(message),
+    });
+  }
+
   // ── HUD Toggle ───────────────────────────────
 
   /**
@@ -1469,8 +1537,10 @@ export class StyleManager extends ShellFacade {
     this._displayBindings.destroy();
     this._mapSourceControls?.destroy();
     this._cameraOrientationControls?.destroy();
+    this._locationTagCopy?.destroy();
     this._clearLayersControl?.destroy();
     this._cctvControls?.destroy();
+    this._geofenceWatchPanel?.destroy();
     this._radioControls?.destroy();
     this._cockpitCoordinator.stop();
     this._visualSettings.stop();

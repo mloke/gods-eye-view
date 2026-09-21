@@ -44,9 +44,18 @@ function createViewer({ cameraPosition, target, pickPosition = null } = {}) {
       pickPosition: pickPosition || (() => null),
       globe: { pick: () => surface },
       requestRender: () => calls.push({ type: 'requestRender' }),
+      screenSpaceCameraController: { enableTilt: true },
     },
   };
   return { viewer, calls, target: surface };
+}
+
+function memoryStorage(initial = {}) {
+  const data = new Map(Object.entries(initial));
+  return {
+    getItem: (key) => (data.has(key) ? data.get(key) : null),
+    setItem: (key, value) => data.set(key, String(value)),
+  };
 }
 
 class FakeButton extends EventTarget {
@@ -105,6 +114,7 @@ function createRealViewer(target) {
   // `camera.changed`, so the fixture has to carry one.
   scene.preRender = new Cesium.Event();
   camera.getPickRay = () => ({});
+  scene.screenSpaceCameraController = { enableTilt: true };
   return { viewer: { camera, scene }, target };
 }
 
@@ -271,6 +281,27 @@ test('tilt alternates at globe range, not only at map range', () => {
       `third click at ${range} m must tilt again`,
     );
   }
+});
+
+test('the tilt button is an allow switch and leaves mouse tilt locked off', () => {
+  const { viewer } = createViewer();
+  const tiltButton = new FakeButton();
+  const storage = memoryStorage();
+  const controls = bindCameraOrientationControls({
+    viewer,
+    elements: { tiltButton, northButton: new FakeButton() },
+    storage,
+    runNavigation: (_noun, navigate) => navigate(),
+  });
+  assert.equal(viewer.scene.screenSpaceCameraController.enableTilt, false);
+  assert.equal(tiltButton.getAttribute('aria-pressed'), 'false');
+  tiltButton.click();
+  assert.equal(viewer.scene.screenSpaceCameraController.enableTilt, true);
+  assert.equal(tiltButton.getAttribute('aria-pressed'), 'true');
+  tiltButton.click();
+  assert.equal(viewer.scene.screenSpaceCameraController.enableTilt, false);
+  assert.equal(tiltButton.getAttribute('aria-pressed'), 'false');
+  controls.destroy();
 });
 
 test('the button shows the state the next click will produce, at every range', () => {
@@ -477,7 +508,7 @@ test('bindings route both controls and release every listener on destroy', () =>
   tiltButton.click();
   northButton.click();
   assert.deepEqual(navigations, ['camera', 'camera']);
-  assert.deepEqual(toasts, ['Tilted view', 'North up']);
+  assert.deepEqual(toasts, ['Angled view on', 'North up']);
   // The button shows the state the click just commanded, not a re-measurement.
   assert.equal(tiltButton.getAttribute('aria-pressed'), 'true');
   assert.equal(northButton.getAttribute('--camera-heading'), '90deg');
@@ -634,14 +665,16 @@ test('rapid tilt presses reverse direction and north-up keeps the requested tilt
   t.mock.method(performance, 'now', () => time);
   const target = Cesium.Cartesian3.fromDegrees(0, 0);
   const { viewer } = createRealViewer(target);
-  orbit(viewer, target, 90, OBLIQUE_PITCH, 1000);
+  orbit(viewer, target, 90, STRAIGHT_DOWN_PITCH, 1000);
   viewer.scene.preUpdate = new Cesium.Event();
   const tiltButton = new FakeButton();
   const northButton = new FakeButton();
+  const storage = memoryStorage();
   let controls;
   controls = bindCameraOrientationControls({
     viewer,
     elements: { tiltButton, northButton },
+    storage,
     runNavigation: (_noun, navigate) => {
       controls.cancel();
       return navigate();
@@ -649,8 +682,7 @@ test('rapid tilt presses reverse direction and north-up keeps the requested tilt
   });
   tiltButton.click();
   tiltButton.click();
-  assert.equal(tiltButton.getAttribute('aria-pressed'), 'true');
-  tiltButton.click();
+  assert.equal(tiltButton.getAttribute('aria-pressed'), 'false');
   northButton.click();
   assert.equal(viewer.scene.preUpdate.numberOfListeners, 1);
   time = 650;

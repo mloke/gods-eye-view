@@ -17,7 +17,12 @@ import { createApplicationAlpr } from './layers/alprCameras.js';
 import { createApplicationAwareness } from './layers/militaryAwareness.js';
 import { createApplicationFirms } from './layers/firms.js';
 import { createApplicationEarthquakes } from './layers/earthquakes.js';
+import { createApplicationSdpdReports } from './layers/sdpdReports.js';
+import { createApplicationLocationTags } from './layers/locationTags.js';
+import { createApplicationGeofenceWatch } from './layers/geofenceWatch.js';
 import { createApplicationCables } from './layers/submarineCables.js';
+import { createApplicationSolarSystem } from './layers/solarSystem.js';
+import { createApplicationHomeCommand } from './layers/homeCommand.js';
 import { createInfrastructureLayers } from '../data/infrastructure.js';
 import { localGeoJsonServices } from './localGeojsonServices.js';
 import { createBhoteKoshiEventLayer } from '../data/bhoteKoshiEvent.js';
@@ -43,6 +48,9 @@ const SOURCE_METHODS = Object.freeze({
   alpr: ['fetch'],
   firms: ['getSnapshot'],
   earthquakes: ['getSnapshot'],
+  sdpd: ['getSnapshot'],
+  locationTags: ['getSnapshot'],
+  geofences: ['getSnapshot'],
   cables: ['fetch'],
 });
 
@@ -111,9 +119,17 @@ export function createApplicationCatalog({
         flights,
         military,
         createApplicationEarthquakes({ source: sources.earthquakes }),
+        createApplicationSdpdReports({ source: sources.sdpd }),
+        createApplicationLocationTags({ source: sources.locationTags }),
+        createApplicationGeofenceWatch({
+          fenceSource: sources.geofences,
+          eventSources: { 'sdpd-reports': sources.sdpd },
+        }),
         createApplicationAlpr({ surface, source: sources.alpr }),
         satellites,
         createApplicationLaunches({ source: sources.launches, satellites }),
+        createApplicationSolarSystem(),
+        createApplicationHomeCommand(),
         createApplicationTraffic({ source: sources.traffic }),
         createApplicationCctv({ surface, source: sources.cctv }),
         createApplicationRadio({ surface, source: sources.radio }),

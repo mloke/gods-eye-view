@@ -51,7 +51,7 @@ test('cancelled Space Missions entry resolves ownership before settled bookkeepi
   assert.ok(cancelled < bookkeeping, 'cancellation returns before settled session bookkeeping');
   const branch = handler.slice(cancelled, handler.indexOf("change?.type === 'visibility-blocked'"));
   assert.match(branch, /spaceMissionEntryCancellationDisposition\(\{/);
-  assert.match(branch, /cancellationDisposition === 'replacement'[\s\S]*?_contextModeEntering = 'space-missions'[\s\S]*?entryIntent\.intentEpoch === change\.intentEpoch[\s\S]*?_contextModeReplacementIntent = \{[\s\S]*?intentEpoch: change\.successorIntentEpoch/);
+  assert.match(branch, /cancellationDisposition === 'replacement'[\s\S]*?_contextModeEntering =[\s\S]*?'space-missions'[\s\S]*?entryIntent\.intentEpoch === change\.intentEpoch[\s\S]*?_contextModeReplacementIntent = \{[\s\S]*?intentEpoch: change\.successorIntentEpoch/);
   assert.match(branch, /cancellationDisposition === 'restore'[\s\S]*?_contextModeEntering = null/);
   assert.match(branch, /_restoreContextSessionAfterLayerSettles\(/);
   assert.match(branch, /return;/);
@@ -110,7 +110,7 @@ test('context handler: either failed direct Context-shell start rolls the sessio
     handler.indexOf("change?.type === 'visibility-failed'"),
     handler.indexOf("change?.type === 'visibility-will-change'"),
   );
-  assert.match(failedBranch, /\['military-awareness', 'rocket-launches'\]\.includes\(change\.layerId\)/);
+  assert.match(failedBranch, /\['military-awareness', 'rocket-launches', 'solar-system', 'home-command'\]\.includes\(\s*change\.layerId/);
   assert.match(
     failedBranch,
     /_restoreContextSessionAfterLayerSettles\(\s*change\.layerId,\s*\{\s*notificationToken,?\s*\},?\s*\)/,
@@ -148,14 +148,14 @@ test('wrapped visibility blocks leave the accessible toast to the wrapper token 
 
 test('every user-facing Context exit route settles through the failure surface', () => {
   const initPanel = _initGlobalContextPanel.toString();
-  assert.equal((initPanel.match(/void this\._runUserFacingContextAction/g) || []).length, 3);
+  assert.equal((initPanel.match(/void this\._runUserFacingContextAction/g) || []).length, 5);
   assert.doesNotMatch(initPanel, /falseIsFailure:\s*false/);
   assert.doesNotMatch(initPanel, /void this\._selectContextMode/);
 
   const deactivationCalls = [...handler.matchAll(
     /void this\._trackContextLayerReaction\(\s*this\._runUserFacingContextAction\(\(notificationToken\) =>\s*this\._deactivateContextForLayerChange\(\{ notificationToken \}\),?\s*\),?\s*\)/g,
   )];
-  assert.equal(deactivationCalls.length, 4, 'dependency and primary layer exits share the caught restore path');
+  assert.equal(deactivationCalls.length, 6, 'dependency and primary layer exits share the caught restore path');
   assert.doesNotMatch(handler, /void this\._deactivateContextForLayerChange\(\)/);
 });
 
@@ -236,7 +236,7 @@ test('Context entry awaits isolation and direct shell routes isolate in the visi
   assert.match(ContextControls.prototype.stop.toString(), /this\._contextModeGeneration\+\+/);
 
   const guard = connectContextManager.toString();
-  assert.match(guard, /\['military-awareness', 'rocket-launches'\]\.includes\(change\.layerId\)/);
+  assert.match(guard, /\['military-awareness', 'rocket-launches', 'solar-system', 'home-command'\]\.includes\(\s*change\.layerId/);
   assert.match(guard, /const notificationToken\s*=\s*change\.notificationToken\s*\|\|\s*Symbol\('direct-context-shell-entry'\)/);
   assert.match(guard, /this\._userFacingContextNotificationTokens\.add\(notificationToken\)/);
   assert.match(guard, /await this\._clearLayersOutsideContextMode\(entryMode,\s*\{\s*notificationToken,?\s*\}\)/);

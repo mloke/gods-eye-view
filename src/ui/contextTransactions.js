@@ -1,5 +1,6 @@
 import {
   contextAllowedLayerIds,
+  contextEntryLayerId,
   mergeContextTransitionErrors,
 } from '../contextModePolicy.js';
 
@@ -79,8 +80,7 @@ export async function _selectContextMode(
     // Entry is one transaction: isolation succeeded above, so a failed mode
     // activation must roll the cleared layers back instead of stranding the
     // user in a half-entered mode with an orphaned snapshot.
-    const entryLayerId =
-      mode === 'flights' ? 'military-awareness' : 'rocket-launches';
+    const entryLayerId = contextEntryLayerId(mode);
     if (mode === 'flights') {
       this._dataManager.setLayerParams('military-awareness', {
         passive: false,
@@ -112,7 +112,9 @@ export async function _selectContextMode(
     }
     if (!isCurrent()) return false;
     let replacementIntent =
-      mode === 'space-missions' &&
+      (mode === 'space-missions' ||
+        mode === 'solar-system' ||
+        mode === 'home-command') &&
       this._contextModeReplacementIntent?.generation === generation &&
       this._contextModeReplacementIntent.layerId === entryLayerId
         ? this._contextModeReplacementIntent

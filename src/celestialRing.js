@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { governorRequestRender } from './renderGovernor.js';
+import { isSolarSystemRegimeActive } from './solarSystem/sceneRegime.js';
 
 /** Outer edge of the existing NVG/FLIR keyhole in normalized shader space. */
 export const KEYHOLE_OUTER_RADIUS = 1.05;
@@ -725,6 +726,12 @@ export class CelestialRing {
   /** Per-frame camera projection with GPU-composited cached effect layers. */
   _draw() {
     if (!this.enabled || !this._sunCtx || !this._moonCtx) return;
+    if (isSolarSystemRegimeActive()) {
+      this.visible = false;
+      this._root?.classList.toggle('visible', false);
+      this._clear();
+      return;
+    }
     const now = performance.now();
     if (now < this._nextDrawAt) return;
     this._nextDrawAt = now + 1000 / CELESTIAL_MAX_FRAME_RATE;

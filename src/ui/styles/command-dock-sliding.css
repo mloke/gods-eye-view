@@ -102,6 +102,11 @@
   display: flex !important;
 }
 
+#command-dock .dock-popover-content .location-saved-view:not([hidden]) {
+  display: flex !important;
+  flex-direction: column;
+}
+
 #command-dock .dock-popover-content .poi-row-container:not(.expanded) {
   display: none !important;
 }
@@ -453,7 +458,7 @@
   transform: none;
 }
 
-#command-dock .dock-popover-content :is(.location-pill, .poi-pill):hover {
+#command-dock .dock-popover-content :is(.location-pill, .poi-pill, .location-saved-item):hover {
   transform: none;
 }
 

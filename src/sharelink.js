@@ -9,6 +9,7 @@ import {
   decodeLayerStateParams,
   encodeLayerStateParams,
 } from './data/layerState.js';
+import { resolveCameraPitchDeg } from './cameraTiltPolicy.js';
 
 /**
  * Share Links — URL Hash State Management
@@ -275,7 +276,7 @@ export class ShareLinkManager {
       ),
       orientation: {
         heading: Cesium.Math.toRadians(state.heading),
-        pitch: Cesium.Math.toRadians(state.pitch),
+        pitch: Cesium.Math.toRadians(resolveCameraPitchDeg(state.pitch)),
         roll: Cesium.Math.toRadians(state.roll),
       },
     };

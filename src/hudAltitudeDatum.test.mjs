@@ -248,3 +248,30 @@ test('the corrected readouts are the MSL datum, not a coincidence of the SFO sig
     env.restore();
   }
 });
+
+test('Solar System regime skips Earth altitude and locality readouts', async () => {
+  const {
+    enterSolarSystemOverview,
+    resetSceneRegimeForTest,
+  } = await import('./solarSystem/sceneRegime.js');
+  const env = installHudEnvironment();
+  let hud;
+  try {
+    resetSceneRegimeForTest();
+    enterSolarSystemOverview({
+      scene: {
+        globe: { show: true },
+        primitives: { length: 0, get() { return null; } },
+      },
+    });
+    hud = new IntelHUD(env.viewer);
+    hud._updateCameraData();
+    assert.equal(env.elements.get('hud-alt').textContent, 'ALT: ---');
+    assert.equal(env.elements.get('hud-latlon').textContent, 'SOLAR SYSTEM');
+    assert.equal(env.elements.get('hud-summary').textContent, 'SOLAR SYSTEM');
+  } finally {
+    hud?.destroy();
+    resetSceneRegimeForTest();
+    env.restore();
+  }
+});

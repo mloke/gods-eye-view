@@ -32,12 +32,15 @@ export function addressSegments(label) {
  * @param {{name: string, pois?: Array<{name: string}>}|null} [input.city]
  *   Active preset city record, or null.
  * @param {{name: string}|null} [input.currentPoi] - Currently framed preset POI.
+ * @param {{name: string, tags?: string[], note?: string}|null} [input.savedPlace]
+ *   Active personal tag from the Saved tab.
  * @param {string} [input.searchedLabel] - Geocoded `formatted_address`.
  * @returns {{city: string, poi: string}} Line one and line two.
  */
 export function locationMiniStatus({
   city = null,
   currentPoi = null,
+  savedPlace = null,
   searchedLabel = '',
 } = {}) {
   if (city?.name) {
@@ -45,6 +48,16 @@ export function locationMiniStatus({
     return {
       city: `📍 ${city.name}`,
       poi: currentPoi?.name || fallbackPoi?.name || '--',
+    };
+  }
+
+  if (savedPlace?.name) {
+    const tags = Array.isArray(savedPlace.tags)
+      ? savedPlace.tags.filter(Boolean).join(' · ')
+      : '';
+    return {
+      city: `📍 ${savedPlace.name}`,
+      poi: tags || savedPlace.note || 'Saved place',
     };
   }
 

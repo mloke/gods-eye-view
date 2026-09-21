@@ -5,10 +5,12 @@ import {
   CITY_POIS,
   GLOBE_VIEW,
   flyToGlobeView,
+  flyToLandmark,
   flyToPresetLocation,
   flyToPOI,
   searchAndFlyTo,
 } from '../locations.js';
+import { createLocationTagsSource } from '../layers/locationTags/source.js';
 import { interruptCameraMotion } from '../cameraVerbs.js';
 import { IntelHUD } from '../hud.js';
 import { ShareLinkManager } from '../sharelink.js';
@@ -69,9 +71,12 @@ export class StyleManager extends ApplicationShell {
         CITY_POIS,
         GLOBE_VIEW,
         flyToGlobeView,
+        flyToLandmark,
         flyToPresetLocation,
         flyToPOI,
         searchAndFlyTo,
+        loadSavedPlaces: (options) =>
+          createLocationTagsSource(options).getSnapshot(),
         interruptCameraMotion,
         IntelHUD,
         ShareLinkManager,

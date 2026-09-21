@@ -38,7 +38,12 @@ export function _handleContextLayerChange(change) {
       }
     }
     if (cancellationDisposition === 'replacement') {
-      this._contextModeEntering = 'space-missions';
+      this._contextModeEntering =
+        change.layerId === 'solar-system'
+          ? 'solar-system'
+          : change.layerId === 'home-command'
+            ? 'home-command'
+            : 'space-missions';
       const entryIntent = this._contextModeEntryIntent;
       if (
         entryIntent?.generation === this._contextModeGeneration &&
@@ -63,7 +68,7 @@ export function _handleContextLayerChange(change) {
               notificationToken,
             });
             return true;
-          }, 'Space Missions cancellation could not restore the previous layer state'),
+          }, `${change.layerId === 'solar-system' ? 'Solar System' : change.layerId === 'home-command' ? 'Command' : 'Space Missions'} cancellation could not restore the previous layer state`),
         );
       }
     }
@@ -71,7 +76,9 @@ export function _handleContextLayerChange(change) {
     return;
   }
   if (
-    change?.layerId === 'rocket-launches' &&
+    ['rocket-launches', 'solar-system', 'home-command'].includes(
+      change?.layerId,
+    ) &&
     ['visibility', 'visibility-blocked', 'visibility-failed'].includes(
       change.type,
     )
@@ -97,7 +104,9 @@ export function _handleContextLayerChange(change) {
     // notification for this queue to settle, then reconcile the complete
     // snapshot, including an uncertain failed shell.
     const needsDeferredShellRestore =
-      ['military-awareness', 'rocket-launches'].includes(change.layerId) &&
+      ['military-awareness', 'rocket-launches', 'solar-system', 'home-command'].includes(
+        change.layerId,
+      ) &&
       change.enabled &&
       this._contextSessionSnapshot &&
       !this._contextModeChanging;
@@ -184,6 +193,46 @@ export function _handleContextLayerChange(change) {
       this._contextMode = change.enabled
         ? 'space-missions'
         : this._contextMode === 'space-missions'
+          ? null
+          : this._contextMode;
+      if (change.enabled) {
+        this._syncContextModeButtons();
+      } else if (this._contextSessionSnapshot) {
+        void this._trackContextLayerReaction(
+          this._runUserFacingContextAction((notificationToken) =>
+            this._deactivateContextForLayerChange({ notificationToken }),
+          ),
+        );
+      }
+    } else if (change.layerId === 'solar-system') {
+      const ownsContextEntry =
+        isExplicitUserIntentOrigin(change.origin, change.layerId) ||
+        this._contextMode === 'solar-system' ||
+        effectiveContextMode === 'solar-system';
+      if (!ownsContextEntry) return;
+      this._contextMode = change.enabled
+        ? 'solar-system'
+        : this._contextMode === 'solar-system'
+          ? null
+          : this._contextMode;
+      if (change.enabled) {
+        this._syncContextModeButtons();
+      } else if (this._contextSessionSnapshot) {
+        void this._trackContextLayerReaction(
+          this._runUserFacingContextAction((notificationToken) =>
+            this._deactivateContextForLayerChange({ notificationToken }),
+          ),
+        );
+      }
+    } else if (change.layerId === 'home-command') {
+      const ownsContextEntry =
+        isExplicitUserIntentOrigin(change.origin, change.layerId) ||
+        this._contextMode === 'home-command' ||
+        effectiveContextMode === 'home-command';
+      if (!ownsContextEntry) return;
+      this._contextMode = change.enabled
+        ? 'home-command'
+        : this._contextMode === 'home-command'
           ? null
           : this._contextMode;
       if (change.enabled) {

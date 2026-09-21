@@ -1,0 +1,577 @@
+#home-command-stage {
+  --hc-bg: #07090c;
+  --hc-raised: #10151b;
+  --hc-inset: #0b0f13;
+  --hc-line: #243040;
+  --hc-text: #e7edf4;
+  --hc-muted: #8b97a8;
+  --hc-amber: #d4a017;
+  --hc-green: #5fb36a;
+  --hc-red: #e24b4b;
+  --hc-steel: #7ea0bd;
+  position: absolute;
+  top: 58px;
+  right: 0;
+  bottom: 72px;
+  left: 0;
+  z-index: 80;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #162033 0%, transparent 55%),
+    var(--hc-bg);
+  color: var(--hc-text);
+  pointer-events: auto;
+}
+
+#home-command-stage[hidden] {
+  display: none !important;
+}
+
+#home-command-stage:not([hidden]) ~ #title-bar,
+#home-command-stage:not([hidden]) ~ #style-indicator {
+  display: none;
+}
+
+#home-command-stage .home-command-topbar {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--hc-line);
+  background: rgba(7, 9, 12, 0.92);
+}
+
+#home-command-stage .brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#home-command-stage .brand-mark {
+  width: 28px;
+  height: 28px;
+  clip-path: polygon(50% 8%, 94% 42%, 94% 92%, 6% 92%, 6% 42%);
+  background: linear-gradient(180deg, var(--hc-amber), #8a6410);
+}
+
+#home-command-stage .brand-name,
+#home-command-stage .brand-sub,
+#home-command-stage h2,
+#home-command-panel-host h2,
+#home-command-stage .alarm-state,
+#home-command-stage .clock {
+  margin: 0;
+}
+
+#home-command-stage .brand-name {
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#home-command-stage .brand-sub,
+#home-command-stage .muted,
+#home-command-panel-host .muted,
+#home-command-stage .link-status,
+#home-command-panel-host #alarm-since,
+#home-command-panel-host .muted {
+  color: var(--hc-muted);
+  font-size: 12px;
+}
+
+#home-command-stage .chip,
+#home-command-panel-host .chip {
+  padding: 6px 12px;
+  border: 1px solid var(--hc-line);
+  font: 700 12px/1 var(--font-mono, Consolas, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#home-command-stage .chip-secure {
+  color: var(--hc-green);
+  border-color: #2f5a38;
+  background: #122017;
+}
+
+#home-command-stage .chip-home {
+  color: var(--hc-amber);
+  border-color: #6d5412;
+  background: #231c0c;
+}
+
+#home-command-stage .chip-alert,
+#home-command-stage .chip-unknown {
+  color: var(--hc-red);
+  border-color: #6d2a2a;
+  background: #230f0f;
+}
+
+#home-command-stage .clock {
+  font: 500 18px/1 var(--font-mono, Consolas, monospace);
+  letter-spacing: 0.04em;
+}
+
+#home-command-stage .home-command-layout {
+  min-height: 0;
+  height: 100%;
+  padding: 12px 16px 0;
+  display: grid;
+}
+
+#home-command-stage .home-command-main {
+  display: grid;
+  grid-template-rows: minmax(240px, 1fr) minmax(110px, auto);
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+}
+
+#home-command-stage .map-wrap {
+  min-height: 220px;
+  border: 1px solid var(--hc-line);
+  background: #0b1016;
+  display: flex;
+  flex-direction: column;
+}
+
+#home-command-stage .map-stage {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+#home-command-stage .map-caption {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hc-steel);
+  border-bottom: 1px solid #1b2430;
+}
+
+#home-command-stage .map {
+  position: absolute;
+  inset: 0;
+  padding: 8px 8px 28px;
+}
+
+#home-command-stage .map svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#home-command-stage .map.placing {
+  cursor: crosshair;
+}
+
+#home-command-stage .map .lot {
+  fill: rgba(16, 24, 34, 0.55);
+  stroke: #2a3a4c;
+  stroke-width: 0.08;
+}
+#home-command-stage .map .yard {
+  fill: rgba(45, 140, 70, 0.22);
+  stroke: #5fd37a;
+  stroke-width: 0.16;
+}
+#home-command-stage .map .building {
+  fill: rgba(36, 48, 64, 0.55);
+  stroke: #d4a017;
+  stroke-width: 0.2;
+}
+#home-command-stage .map .room {
+  fill: #182230;
+  stroke: #3d536c;
+  stroke-width: 0.08;
+}
+#home-command-stage .map .room.active {
+  fill: #3a2a12;
+  stroke: var(--hc-amber);
+}
+#home-command-stage .map .room.alert {
+  fill: #3a1515;
+  stroke: var(--hc-red);
+}
+#home-command-stage .map .selected {
+  stroke: #e7edf4;
+  stroke-width: 0.22;
+}
+#home-command-stage .map .fov {
+  fill: rgba(126, 160, 189, 0.16);
+}
+#home-command-stage .map .fov.motion {
+  fill: rgba(212, 160, 23, 0.28);
+}
+#home-command-stage .map .fov.offline {
+  fill: rgba(226, 75, 75, 0.12);
+}
+#home-command-stage .map .device {
+  cursor: pointer;
+}
+#home-command-stage .map .camera-pt {
+  fill: var(--hc-steel);
+}
+#home-command-stage .map .sensor-pt {
+  fill: var(--hc-green);
+}
+#home-command-stage .map .sensor-pt.active {
+  fill: var(--hc-amber);
+}
+#home-command-stage .map .sensor-pt.alert {
+  fill: var(--hc-red);
+}
+#home-command-stage .map .defense-pt {
+  fill: #9b7bff;
+}
+#home-command-stage .map .defense-pt.active {
+  fill: var(--hc-amber);
+}
+#home-command-stage .map .heading-handle {
+  fill: var(--hc-steel);
+  cursor: grab;
+  opacity: 0.25;
+}
+#home-command-stage .map .heading-handle.selected {
+  fill: var(--hc-amber);
+  opacity: 1;
+}
+#home-command-stage .map .track {
+  cursor: pointer;
+}
+#home-command-stage .map .track circle {
+  stroke: #0b1016;
+  stroke-width: 0.08;
+}
+#home-command-stage .map .track.person circle {
+  fill: #e2b340;
+}
+#home-command-stage .map .track.animal circle {
+  fill: #6ecf7a;
+}
+#home-command-stage .map .track.selected circle {
+  stroke: #e7edf4;
+  stroke-width: 0.16;
+}
+#home-command-stage .map .track text {
+  fill: #e7edf4;
+  font-size: 0.55px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+#home-command-stage .compass {
+  position: absolute;
+  right: 12px;
+  bottom: 28px;
+  width: 64px;
+  height: 64px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+#home-command-stage .compass svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+
+#home-command-stage .compass-ring {
+  fill: rgba(11, 16, 22, 0.78);
+  stroke: #d4a017;
+  stroke-width: 2;
+}
+
+#home-command-stage .needle-n {
+  fill: #d4a017;
+}
+#home-command-stage .needle-s {
+  fill: #7ea0bd;
+}
+#home-command-stage .compass-n {
+  fill: #e7edf4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#home-command-stage .street-label {
+  position: absolute;
+  left: 12px;
+  right: 88px;
+  bottom: 8px;
+  margin: 0;
+  z-index: 2;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #c9d3de;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 1px 4px #0b1016;
+}
+
+#home-command-stage .wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+
+#home-command-stage .camera {
+  position: relative;
+  min-height: 110px;
+  overflow: hidden;
+  background: #05070a;
+  border: 1px solid var(--hc-line);
+}
+
+#home-command-stage .camera canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  min-height: 110px;
+}
+
+#home-command-stage .camera-meta {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
+  font-size: 12px;
+}
+
+#home-command-stage .camera-name {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#home-command-stage .rec {
+  color: var(--hc-red);
+  font-family: var(--font-mono, Consolas, monospace);
+}
+
+#home-command-stage .camera.motion {
+  border-color: var(--hc-amber);
+}
+#home-command-stage .camera.selected {
+  border-color: #e7edf4;
+}
+#home-command-stage .camera-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  border: 1px dashed var(--hc-line);
+  background: transparent;
+  color: var(--hc-muted);
+  cursor: pointer;
+  font: 700 12px/1 inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#home-command-stage .ticker {
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--hc-line);
+  background: rgba(7, 9, 12, 0.92);
+}
+
+#home-command-stage .ticker h2,
+#home-command-panel-host h2 {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hc-steel);
+}
+
+#home-command-stage .ticker ol {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 6px 18px;
+  max-height: 120px;
+  overflow: auto;
+}
+
+#home-command-stage .ticker li,
+#home-command-panel-host .blockers li {
+  cursor: pointer;
+}
+
+#home-command-stage .ticker li {
+  display: grid;
+  grid-template-columns: 64px 16px 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+
+#home-command-stage .ticker time {
+  color: var(--hc-muted);
+  font-family: var(--font-mono, Consolas, monospace);
+}
+
+#home-command-stage .lvl {
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  background: var(--hc-steel);
+}
+#home-command-stage .lvl-warn {
+  background: var(--hc-amber);
+}
+#home-command-stage .lvl-alert {
+  background: var(--hc-red);
+}
+
+#home-command-stage .ticker li.selected,
+#home-command-panel-host .row.selected {
+  background: #1b2430;
+}
+
+#home-command-panel-host {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#home-command-panel-host .panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(16, 21, 27, 0.72);
+  border: 1px solid rgba(36, 48, 64, 0.9);
+}
+
+#home-command-panel-host .alarm-state {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#home-command-panel-host .alarm-state[data-state='disarmed'] {
+  color: var(--hc-green, #5fb36a);
+}
+#home-command-panel-host .alarm-state[data-state='armed_home'],
+#home-command-panel-host .alarm-state[data-state='arming'] {
+  color: var(--hc-amber, #d4a017);
+}
+#home-command-panel-host .alarm-state[data-state='armed_away'],
+#home-command-panel-host .alarm-state[data-state='entry_delay'],
+#home-command-panel-host .alarm-state[data-state='triggered'] {
+  color: var(--hc-red, #e24b4b);
+}
+
+#home-command-panel-host .blockers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: #d4a017;
+}
+
+#home-command-panel-host .button-row,
+#home-command-stage .button-row {
+  display: flex;
+  gap: 8px;
+}
+
+#home-command-panel-host button,
+#home-command-stage .home-command-dialog button {
+  flex: 1;
+  border: 1px solid #3b4b60;
+  background: #1a2430;
+  color: #e7edf4;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+#home-command-panel-host button.quiet,
+#home-command-stage .home-command-dialog button.quiet {
+  background: transparent;
+}
+
+#home-command-panel-host button.danger,
+#home-command-stage .home-command-dialog button.danger {
+  background: #3a1515;
+  border-color: #7a2d2d;
+  color: #ffd0d0;
+}
+
+#home-command-panel-host .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1b2430;
+  font-size: 13px;
+}
+
+#home-command-panel-host .row:last-child {
+  border-bottom: 0;
+}
+
+#home-command-panel-host .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5fb36a;
+}
+
+#home-command-panel-host .dot.on {
+  background: #d4a017;
+}
+#home-command-panel-host .dot.alert {
+  background: #e24b4b;
+}
+
+#home-command-stage .home-command-dialog {
+  width: min(520px, calc(100vw - 32px));
+  border: 1px solid #243040;
+  background: #10151b;
+  color: #e7edf4;
+  padding: 20px;
+}
+
+#home-command-stage .home-command-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#home-command-stage .home-command-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#home-command-stage .home-command-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #8b97a8;
+}
+
+#home-command-stage .home-command-dialog input,
+#home-command-stage .home-command-dialog select {
+  background: #0b0f13;
+  border: 1px solid #243040;
+  color: #e7edf4;
+  padding: 8px 10px;
+}
+

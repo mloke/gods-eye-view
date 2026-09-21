@@ -1,6 +1,9 @@
 import { locationMiniStatus } from '../locationStatus.js';
 const POI_KEYS = ['Q', 'W', 'E', 'R', 'T'];
 
+const EMPTY_SAVED_MESSAGE =
+  'No saved places. Right-click the globe to copy a place snippet.';
+
 /** Location DOM, keyboard handling and pending row animation over supplied actions. */
 export class LocationControls {
   constructor({
@@ -11,6 +14,8 @@ export class LocationControls {
     onPoi,
     onSearch,
     onReset,
+    onTab,
+    onSavedPlace,
     doc = document,
     requestFrame = (callback) => requestAnimationFrame(callback),
     cancelFrame = (id) => cancelAnimationFrame(id),
@@ -23,15 +28,19 @@ export class LocationControls {
       onPoi,
       onSearch,
       onReset,
+      onTab,
+      onSavedPlace,
       doc,
       requestFrame,
       cancelFrame,
     });
     this.removers = [];
     this.poiRemovers = [];
+    this.savedRemovers = [];
     this.frame = null;
     this.destroyed = false;
     this.rowGeneration = 0;
+    this.tab = 'cities';
     elements.pills.replaceChildren();
     for (const [id, city] of Object.entries(cities)) {
       const pill = doc.createElement('button');
@@ -45,6 +54,7 @@ export class LocationControls {
     this.bind(doc, 'keydown', (event) => {
       const cityId = getExpandedCity();
       if (
+        this.tab !== 'cities' ||
         !cityId ||
         event.target?.matches?.('select, input, textarea') ||
         event.target === elements.search
@@ -64,6 +74,90 @@ export class LocationControls {
     });
     for (const button of elements.resetButtons)
       this.bind(button, 'click', onReset);
+    if (elements.tabCities)
+      this.bind(elements.tabCities, 'click', () => onTab?.('cities'));
+    if (elements.tabSaved)
+      this.bind(elements.tabSaved, 'click', () => onTab?.('saved'));
+    this.bind(elements.tabCities, 'keydown', (event) =>
+      this.onTabKey(event, 'saved'),
+    );
+    this.bind(elements.tabSaved, 'keydown', (event) =>
+      this.onTabKey(event, 'cities'),
+    );
+  }
+  onTabKey(event, nextTab) {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    this.onTab?.(nextTab);
+    const target =
+      nextTab === 'saved' ? this.elements.tabSaved : this.elements.tabCities;
+    target?.focus?.();
+  }
+  setTab(tab) {
+    if (this.destroyed) return;
+    const cities = tab !== 'saved';
+    this.tab = cities ? 'cities' : 'saved';
+    this.elements.tabCities?.classList.toggle('active', cities);
+    this.elements.tabSaved?.classList.toggle('active', !cities);
+    this.elements.tabCities?.setAttribute('aria-selected', String(cities));
+    this.elements.tabSaved?.setAttribute('aria-selected', String(!cities));
+    if (this.elements.citiesView) this.elements.citiesView.hidden = !cities;
+    if (this.elements.savedView) this.elements.savedView.hidden = cities;
+  }
+  setSavedCount(count) {
+    if (this.destroyed || !this.elements.tabSaved) return;
+    const n = Number(count);
+    this.elements.tabSaved.textContent =
+      Number.isFinite(n) && n > 0 ? `Saved · ${n}` : 'Saved';
+  }
+  renderSavedPlaces(places, { emptyMessage = EMPTY_SAVED_MESSAGE } = {}) {
+    if (this.destroyed || !this.elements.savedList) return;
+    for (const remove of this.savedRemovers.splice(0)) remove();
+    this.elements.savedList.replaceChildren();
+    if (!places?.length) {
+      const empty = this.doc.createElement('p');
+      empty.className = 'location-saved-empty';
+      empty.textContent = emptyMessage;
+      this.elements.savedList.appendChild(empty);
+      return;
+    }
+    for (const place of places) {
+      const button = this.doc.createElement('button');
+      button.type = 'button';
+      button.className = 'location-saved-item';
+      button.dataset.placeId = place.stableId;
+      const swatch = this.doc.createElement('span');
+      swatch.className = 'location-saved-swatch';
+      swatch.setAttribute('aria-hidden', 'true');
+      if (place.color) swatch.style.background = place.color;
+      const copy = this.doc.createElement('span');
+      copy.className = 'location-saved-copy';
+      const name = this.doc.createElement('span');
+      name.className = 'location-saved-name';
+      name.textContent = place.name;
+      const meta = this.doc.createElement('span');
+      meta.className = 'location-saved-meta';
+      const tags = Array.isArray(place.tags)
+        ? place.tags.filter(Boolean).join(' · ')
+        : '';
+      meta.textContent = tags || place.note || '';
+      copy.append(name, meta);
+      button.append(swatch, copy);
+      this.bind(
+        button,
+        'click',
+        () => this.onSavedPlace?.(place.stableId),
+        this.savedRemovers,
+      );
+      this.elements.savedList.appendChild(button);
+    }
+  }
+  highlightSavedPlace(id) {
+    if (this.destroyed || !this.elements.savedList) return;
+    for (const item of this.elements.savedList.querySelectorAll(
+      '.location-saved-item',
+    ))
+      item.classList.toggle('active', item.dataset.placeId === id);
   }
   bind(element, event, handler, removers = this.removers) {
     if (!element) return;
@@ -154,6 +248,7 @@ export class LocationControls {
     this.destroyed = true;
     this.cancelExpansion();
     for (const remove of [
+      ...this.savedRemovers.splice(0),
       ...this.poiRemovers.splice(0),
       ...this.removers.splice(0),
     ])

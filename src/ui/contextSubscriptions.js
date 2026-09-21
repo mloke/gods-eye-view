@@ -38,11 +38,18 @@ export function connectContextManager(manager) {
               intentEpoch: change.intentEpoch,
               origin: change.origin,
             };
-            this._contextModeEntering = 'space-missions';
+            this._contextModeEntering =
+              change.layerId === 'solar-system'
+                ? 'solar-system'
+                : change.layerId === 'home-command'
+                  ? 'home-command'
+                  : 'space-missions';
             this._syncContextModeButtons();
           }
         } else if (
-          change?.layerId === 'rocket-launches' &&
+          ['rocket-launches', 'solar-system', 'home-command'].includes(
+            change?.layerId,
+          ) &&
           change.enabled === false &&
           isExplicitUserIntentOrigin(change.origin, change.layerId)
         ) {
@@ -70,15 +77,25 @@ export function connectContextManager(manager) {
         if (reason) return reason;
         if (
           change.enabled &&
-          ['military-awareness', 'rocket-launches'].includes(change.layerId) &&
+          ['military-awareness', 'rocket-launches', 'solar-system', 'home-command'].includes(
+            change.layerId,
+          ) &&
           shouldCaptureContextSession(change) &&
           (!this._contextModeChanging ||
-            (change.layerId === 'rocket-launches' &&
+            (['rocket-launches', 'solar-system', 'home-command'].includes(
+              change.layerId,
+            ) &&
               this._contextModeDeferredEntryIntent?.intentEpoch ===
                 change.intentEpoch))
         ) {
           const entryMode =
-            change.layerId === 'rocket-launches' ? 'space-missions' : null;
+            change.layerId === 'rocket-launches'
+              ? 'space-missions'
+              : change.layerId === 'solar-system'
+                ? 'solar-system'
+                : change.layerId === 'home-command'
+                  ? 'home-command'
+                  : null;
           const deferredClearEntry =
             this._contextModeDeferredEntryIntent?.intentEpoch ===
             change.intentEpoch;
@@ -124,7 +141,7 @@ export function connectContextManager(manager) {
                 restoreError,
               );
             }
-            return `${entryMode === 'space-missions' ? 'Space Missions' : 'Context'} could not start because another layer did not stop cleanly`;
+            return `${entryMode === 'space-missions' ? 'Space Missions' : entryMode === 'solar-system' ? 'Solar System' : entryMode === 'home-command' ? 'Command' : 'Context'} could not start because another layer did not stop cleanly`;
           } finally {
             if (ownsNotificationToken) {
               this._userFacingContextNotificationTokens.delete(

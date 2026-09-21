@@ -4,6 +4,8 @@ export function _initGlobalContextPanel() {
   const contextTabs = [
     this._globalContextFlightsBtn,
     this._globalContextMissionsBtn,
+    this._globalContextSolarBtn,
+    this._globalContextCommandBtn,
   ].filter(Boolean);
   contextTabs.forEach((tab, index) =>
     this.listen(tab, 'keydown', (event) => {
@@ -68,6 +70,64 @@ export function _initGlobalContextPanel() {
         nextMode &&
         shouldExpandGlobalContextPanel({
           action: 'space-missions',
+          explicitUserAction: true,
+          succeeded: succeeded === true,
+        })
+      )
+        this.actions.setPanelCollapsed('global-context-panel', false, {
+          explicit: true,
+        });
+    });
+  });
+  this.listen(this._globalContextSolarBtn, 'click', () => {
+    if (
+      this.destroyed ||
+      this._contextModeChanging ||
+      this._clearSelectedLayersPromise
+    )
+      return;
+    const nextMode =
+      this._contextMode === 'solar-system' ? null : 'solar-system';
+    this._claimContextVisualAuthority();
+    void this._runUserFacingContextAction(
+      (notificationToken) =>
+        this._selectContextMode(nextMode, { notificationToken }),
+      'Solar System could not complete the requested transition; try again',
+    ).then((succeeded) => {
+      if (
+        !this.destroyed &&
+        nextMode &&
+        shouldExpandGlobalContextPanel({
+          action: 'solar-system',
+          explicitUserAction: true,
+          succeeded: succeeded === true,
+        })
+      )
+        this.actions.setPanelCollapsed('global-context-panel', false, {
+          explicit: true,
+        });
+    });
+  });
+  this.listen(this._globalContextCommandBtn, 'click', () => {
+    if (
+      this.destroyed ||
+      this._contextModeChanging ||
+      this._clearSelectedLayersPromise
+    )
+      return;
+    const nextMode =
+      this._contextMode === 'home-command' ? null : 'home-command';
+    this._claimContextVisualAuthority();
+    void this._runUserFacingContextAction(
+      (notificationToken) =>
+        this._selectContextMode(nextMode, { notificationToken }),
+      'Command could not complete the requested transition; try again',
+    ).then((succeeded) => {
+      if (
+        !this.destroyed &&
+        nextMode &&
+        shouldExpandGlobalContextPanel({
+          action: 'home-command',
           explicitUserAction: true,
           succeeded: succeeded === true,
         })

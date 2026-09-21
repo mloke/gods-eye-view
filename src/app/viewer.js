@@ -28,6 +28,7 @@ export function createApplicationViewer({ container, creditContainer }) {
     viewer.scene.skyAtmosphere.atmosphereLightIntensity = 18;
     viewer.scene.skyAtmosphere.saturationShift = -0.12;
     viewer.scene.skyAtmosphere.brightnessShift = -0.08;
+    viewer.scene.screenSpaceCameraController.enableTilt = false;
     return viewer;
   } catch (error) {
     viewer.destroy();

@@ -1,5 +1,11 @@
 import * as Cesium from 'cesium';
 import { isPickedWorldPosition } from '../data/scenePick.js';
+import {
+  applyAngledViewController,
+  readStoredAngledViewAllowed,
+  setAngledViewAllowed,
+} from '../cameraTiltPolicy.js';
+import { isSolarSystemRegimeActive } from '../solarSystem/sceneRegime.js';
 
 function trackedTarget(viewer) {
   const entity = viewer.trackedEntity;
@@ -107,6 +113,7 @@ export function readCameraTargetFrame(viewer) {
 
 /** Apply an orbit frame, then return the camera to Cesium's fixed-world frame. */
 export function setCameraTargetFrame(viewer, frame) {
+  if (isSolarSystemRegimeActive()) return false;
   const camera = viewer?.camera;
   if (!camera || !frame?.target || !Number.isFinite(frame.range)) return false;
   try {
@@ -244,22 +251,22 @@ export function bindCameraOrientationControls({
   elements,
   runNavigation,
   showToast,
+  storage = globalThis.localStorage,
 }) {
   const tiltButton = elements?.tiltButton;
   const northButton = elements?.northButton;
   const removers = [];
   let destroyed = false;
   let applied = null;
-  // The tilt state is the one thing here that costs a depth read of the middle
-  // of the screen: 4 ms median and up to 12 ms, measured on this machine. It is
-  // therefore held between refreshes rather than recomputed per frame.
-  let tilted = false;
+  // Angled view is an allow switch, not a reading of the current camera pitch.
+  // Mouse tilt and location fly-tos stay nadir until this is on.
+  let allowed = readStoredAngledViewAllowed(storage);
+  applyAngledViewController(viewer, allowed);
   const animator = createCameraOrientationAnimator(viewer);
 
-  /** Recompute the tilt state exactly, paying for one pick. */
+  /** Keep the needle current; the allow switch does not follow camera pitch. */
   const refreshTilt = () => {
     if (destroyed) return;
-    tilted = frameIsTilted(readCameraTargetFrame(viewer));
     sync();
   };
 
@@ -274,22 +281,28 @@ export function bindCameraOrientationControls({
   function sync() {
     if (destroyed) return;
     const next = {
-      tilted,
+      allowed,
       heading: Math.round(headingDegrees(viewer?.camera)) % 360,
     };
     if (
       applied &&
-      applied.tilted === next.tilted &&
+      applied.allowed === next.allowed &&
       applied.heading === next.heading
     )
       return;
-    if (!applied || applied.tilted !== next.tilted) {
-      tiltButton?.setAttribute('aria-pressed', String(next.tilted));
+    if (!applied || applied.allowed !== next.allowed) {
+      tiltButton?.setAttribute('aria-pressed', String(next.allowed));
       tiltButton?.setAttribute(
         'aria-label',
-        next.tilted
-          ? 'Return map to straight-down view'
-          : 'Tilt map to oblique view',
+        next.allowed
+          ? 'Lock map to straight-down view'
+          : 'Allow angled map view',
+      );
+      tiltButton?.setAttribute(
+        'title',
+        next.allowed
+          ? 'Angled view is on. Click to lock the map straight down.'
+          : 'Angled view stays off until you turn this on.',
       );
     }
     if (!applied || applied.heading !== next.heading) {
@@ -308,28 +321,35 @@ export function bindCameraOrientationControls({
     removers.push(() => element.removeEventListener('click', handler));
   };
   listen(tiltButton, () => {
+    if (isSolarSystemRegimeActive()) {
+      allowed = setAngledViewAllowed(!allowed, { storage });
+      applyAngledViewController(viewer, allowed);
+      sync();
+      return;
+    }
     const pending = animator.destination;
+    const nextAllowed = !allowed;
     const result = runNavigation('camera', () => {
+      allowed = setAngledViewAllowed(nextAllowed, { storage });
+      applyAngledViewController(viewer, allowed);
       const frame = readCameraTargetFrame(viewer);
-      if (!frame) return false;
-      const nextTilted = !frameIsTilted(pending || frame);
-      const pitch = nextTilted ? OBLIQUE_PITCH : STRAIGHT_DOWN_PITCH;
+      if (!frame) return { allowed };
+      const pitch = allowed ? OBLIQUE_PITCH : STRAIGHT_DOWN_PITCH;
       return animator.animate(frame, {
         heading: pending?.heading ?? frame.heading,
         pitch,
       })
-        ? { tilted: nextTilted, pitch }
-        : false;
+        ? { allowed, pitch }
+        : { allowed };
     });
     if (result) {
-      showToast?.(result.tilted ? 'Tilted view' : 'Straight-down view');
-      // The action reports the state it just commanded, so the button can
-      // follow it without a second pick.
-      tilted = result.tilted;
+      allowed = result.allowed;
+      showToast?.(allowed ? 'Angled view on' : 'Angled view off');
     }
     sync();
   });
   listen(northButton, () => {
+    if (isSolarSystemRegimeActive()) return;
     const pending = animator.destination;
     const result = runNavigation('camera', () => {
       const frame = readCameraTargetFrame(viewer);

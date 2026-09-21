@@ -80,16 +80,25 @@
       </div>
       <div id="location-bar-popover" class="dock-popover-content">
         <button class="dock-pin-btn" data-pin-target="location-bar" type="button" aria-label="Pin location tray" aria-pressed="false" title="Keep location tray open"><img src="/pin.svg" alt="" /></button>
-        <div id="poi-row" class="poi-row-container"></div>
-        <div class="location-bar-divider" id="location-bar-divider"></div>
-        <div class="location-city-row">
-          <div id="location-pills" class="location-pills"></div>
-          <div class="location-search-wrap">
-            <button id="search-toggle" class="search-toggle-btn" title="Search any location">
-              <span>&#x1F50E;</span>
-            </button>
-            <input type="text" id="location-search" placeholder="Search any location..." autocomplete="off" spellcheck="false" aria-label="Search location by name or coordinates" />
+        <div class="location-tabs" role="tablist" aria-label="Location lists">
+          <button id="location-tab-cities" class="location-tab active" type="button" role="tab" aria-selected="true" aria-controls="location-cities-view" tabindex="0">Cities</button>
+          <button id="location-tab-saved" class="location-tab" type="button" role="tab" aria-selected="false" aria-controls="location-saved-view" tabindex="0">Saved</button>
+        </div>
+        <div id="location-cities-view" class="location-tab-view" role="tabpanel" aria-labelledby="location-tab-cities">
+          <div id="poi-row" class="poi-row-container"></div>
+          <div class="location-bar-divider" id="location-bar-divider"></div>
+          <div class="location-city-row">
+            <div id="location-pills" class="location-pills"></div>
+            <div class="location-search-wrap">
+              <button id="search-toggle" class="search-toggle-btn" title="Search any location">
+                <span>&#x1F50E;</span>
+              </button>
+              <input type="text" id="location-search" placeholder="Search any location..." autocomplete="off" spellcheck="false" aria-label="Search location by name or coordinates" />
+            </div>
           </div>
+        </div>
+        <div id="location-saved-view" class="location-tab-view location-saved-view" role="tabpanel" aria-labelledby="location-tab-saved" hidden>
+          <div id="location-saved-list" class="location-saved-list"></div>
         </div>
       </div>
     </div>

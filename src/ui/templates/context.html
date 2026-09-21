@@ -47,10 +47,18 @@
             <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
             <span>SPACE MISSIONS</span>
           </button>
+          <button id="global-context-solar-btn" class="context-mode-button" type="button" role="tab" tabindex="0" aria-selected="false" aria-controls="context-solar-view" aria-label="SOLAR SYSTEM" title="Heliocentric overview of planets, moons, orbiters, and surface assets. Earth intelligence layers stay off.">
+            <span class="material-symbols-outlined" aria-hidden="true">public</span>
+            <span>SOLAR SYSTEM</span>
+          </button>
+          <button id="global-context-command-btn" class="context-mode-button" type="button" role="tab" tabindex="0" aria-selected="false" aria-controls="context-command-view" aria-label="HOME" title="HomeAlone command view: site map, cameras, sensors, and alarm. Local demo house only — the dedicated-PC stack is not connected.">
+            <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+            <span>HOME</span>
+          </button>
         </div>
         <div id="context-mode-standby" class="context-mode-standby">
           <strong>SELECT CONTEXT</strong>
-          <span>CONTACTS — nearest planes · vessels · sites<br>SPACE MISSIONS — launches &amp; orbital assets</span>
+          <span>CONTACTS — nearest planes · vessels · sites<br>SPACE MISSIONS — launches &amp; orbital assets<br>SOLAR SYSTEM — planets, moons, orbiters, rovers<br>HOME — site map, cameras, alarm</span>
         </div>
         <section id="context-flights-view" class="context-mode-view" role="tabpanel" aria-labelledby="global-context-flights-btn" hidden>
           <div class="global-context-actions" aria-label="Contact Context actions">
@@ -84,6 +92,12 @@
               <p class="space-mission-roster-focus-continuation" tabindex="-1" data-mission-roster-focus-continuation>TAB PREVIEWS · ENTER / SPACE SELECTS</p>
             </div>
           </div>
+        </section>
+        <section id="context-solar-view" class="context-mode-view" role="tabpanel" aria-labelledby="global-context-solar-btn" hidden>
+          <div id="solar-system-panel-host"></div>
+        </section>
+        <section id="context-command-view" class="context-mode-view" role="tabpanel" aria-labelledby="global-context-command-btn" hidden>
+          <div id="home-command-panel-host"></div>
         </section>
         <section id="radio-panel" class="panel-collapsible collapsed" data-panel-id="radio-panel" aria-label="Internet radio companion">
           <div class="radio-panel-inner">

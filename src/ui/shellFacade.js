@@ -153,6 +153,22 @@ export class ShellFacade {
     this._locationNavigation._activeLocationId = value;
   }
 
+  get _locationTab() {
+    return this._locationNavigation._locationTab;
+  }
+
+  set _locationTab(value) {
+    this._locationNavigation._locationTab = value;
+  }
+
+  get _activeSavedPlaceId() {
+    return this._locationNavigation._activeSavedPlaceId;
+  }
+
+  set _activeSavedPlaceId(value) {
+    this._locationNavigation._activeSavedPlaceId = value;
+  }
+
   get _expandedCityId() {
     return this._locationNavigation._expandedCityId;
   }
@@ -1165,7 +1181,7 @@ export class ShellFacade {
 
   /**
    * Reads global context mode state for voice/state-sync consumers.
-   * @returns {{mode: 'flights'|'space-missions'|null, active: boolean, changing: boolean, entering: 'flights'|'space-missions'|null, snapshotCaptured: boolean}}
+   * @returns {{mode: 'flights'|'space-missions'|'solar-system'|'home-command'|null, active: boolean, changing: boolean, entering: 'flights'|'space-missions'|'solar-system'|'home-command'|null, snapshotCaptured: boolean}}
    */
   getContextModeState(...args) {
     return this._contextControls?.getContextModeState(...args);
@@ -1173,7 +1189,7 @@ export class ShellFacade {
 
   /**
    * Sets global context mode (Contacts / Space Missions / off) for voice.
-   * @param {'contacts'|'space-missions'|'off'|null} mode - Requested context target.
+   * @param {'contacts'|'space-missions'|'solar-system'|'command'|'home-command'|'off'|null} mode - Requested context target.
    * @param {object} [options]
    * @param {string|Symbol|null} [options.notificationToken]
    * @param {AbortSignal|null} [options.signal]
@@ -1183,7 +1199,7 @@ export class ShellFacade {
    *   lane. Cockpit choreography calls this facade INTERNALLY for its own
    *   enter/rollback steps; those transitions are not a Context request by the
    *   operator and must stay inert, so they pass `false`.
-   * @returns {Promise<{ok:boolean, mode:'flights'|'space-missions'|null, active:boolean, action:string, error?:string}>}
+   * @returns {Promise<{ok:boolean, mode:'flights'|'space-missions'|'solar-system'|'home-command'|null, active:boolean, action:string, error?:string}>}
    */
   setContextMode(...args) {
     return this._contextControls?.setContextMode(...args);
@@ -1360,6 +1376,14 @@ export class ShellFacade {
 
   _onPoiClick(...args) {
     return this._locationNavigation._onPoiClick(...args);
+  }
+
+  _onLocationTab(...args) {
+    return this._locationNavigation._onLocationTab(...args);
+  }
+
+  _onSavedPlaceClick(...args) {
+    return this._locationNavigation._onSavedPlaceClick(...args);
   }
 
   _expandPOIRow(...args) {

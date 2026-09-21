@@ -47,6 +47,53 @@ test('a single-segment geocode says it was searched rather than inventing contex
   );
 });
 
+test('a saved place reports its name and tags', () => {
+  assert.deepEqual(
+    locationMiniStatus({
+      savedPlace: {
+        name: 'Petco Park',
+        tags: ['home-base', 'ballpark'],
+        note: 'Default startup view',
+      },
+    }),
+    { city: '📍 Petco Park', poi: 'home-base · ballpark' },
+  );
+});
+
+test('a saved place without tags falls back to its note, then a generic label', () => {
+  assert.deepEqual(
+    locationMiniStatus({
+      savedPlace: { name: 'Home', tags: [], note: 'North Park' },
+    }),
+    { city: '📍 Home', poi: 'North Park' },
+  );
+  assert.deepEqual(locationMiniStatus({ savedPlace: { name: 'Home' } }), {
+    city: '📍 Home',
+    poi: 'Saved place',
+  });
+});
+
+test('a preset city outranks a saved place and a searched label', () => {
+  assert.deepEqual(
+    locationMiniStatus({
+      city: NEW_YORK,
+      savedPlace: { name: 'Petco Park', tags: ['ballpark'] },
+      searchedLabel: 'Tokyo, Japan',
+    }),
+    { city: '📍 New York', poi: 'Statue of Liberty' },
+  );
+});
+
+test('a saved place outranks a stale searched label', () => {
+  assert.deepEqual(
+    locationMiniStatus({
+      savedPlace: { name: 'Petco Park', tags: ['ballpark'] },
+      searchedLabel: 'Tokyo, Japan',
+    }),
+    { city: '📍 Petco Park', poi: 'ballpark' },
+  );
+});
+
 test('a preset city outranks a stale searched label', () => {
   assert.deepEqual(
     locationMiniStatus({ city: NEW_YORK, searchedLabel: 'Tokyo, Japan' }),

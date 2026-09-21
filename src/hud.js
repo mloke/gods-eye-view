@@ -25,6 +25,10 @@ import {
 } from './data/geoid.js';
 import { getBasemapLabelContext } from './voice/gevActions.js';
 import { isHudSummaryUnconfigured } from './hudSummaryResponse.js';
+import {
+  getFocusedSolarBodyId,
+  isSolarSystemRegimeActive,
+} from './solarSystem/sceneRegime.js';
 
 /** Color palettes keyed by shader mode; applied as CSS custom properties. */
 const HUD_COLORS = {
@@ -327,6 +331,10 @@ export class IntelHUD {
    * collection timestamp. Stores results in {@link _latestMetrics}.
    */
   _updateCameraData() {
+    if (isSolarSystemRegimeActive()) {
+      this._paintSolarSystemReadout();
+      return;
+    }
     const camera = this.viewer.camera;
     const cartographic = camera.positionCartographic;
     if (!cartographic) return;
@@ -622,7 +630,29 @@ export class IntelHUD {
    * altitude, view window dimensions, sun elevation, ONA, and local timezone.
    * @returns {string} Formatted summary line for the HUD summary readout.
    */
+  _solarSystemReadoutLabel() {
+    const bodyId = getFocusedSolarBodyId();
+    return bodyId
+      ? `SOLAR SYSTEM / ${bodyId.toUpperCase()}`
+      : 'SOLAR SYSTEM';
+  }
+
+  _paintSolarSystemReadout() {
+    const label = this._solarSystemReadoutLabel();
+    const mgrs = document.getElementById('hud-mgrs');
+    if (mgrs) mgrs.textContent = 'MGRS: ---';
+    const llEl = document.getElementById('hud-latlon');
+    if (llEl) llEl.textContent = label;
+    const bottomEl = document.getElementById('hud-bottom-line');
+    if (bottomEl) bottomEl.textContent = label;
+    const altEl = document.getElementById('hud-alt');
+    if (altEl) altEl.textContent = 'ALT: ---';
+    this._latestMetrics = null;
+    this._setSummaryText(label, false);
+  }
+
   _composeSummary() {
+    if (isSolarSystemRegimeActive()) return this._solarSystemReadoutLabel();
     const m = this._latestMetrics;
     if (!m) return 'Awaiting telemetry...';
 

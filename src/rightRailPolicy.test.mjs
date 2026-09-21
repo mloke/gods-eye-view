@@ -49,7 +49,7 @@ test('desktop Display participates in Tactical exclusivity without changing mobi
 });
 
 test('explicit Contacts, Space Missions, and Cockpit actions expand Global Context after success', () => {
-  for (const action of ['contacts', 'space-missions', 'cockpit']) {
+  for (const action of ['contacts', 'space-missions', 'solar-system', 'home-command', 'cockpit']) {
     assert.equal(shouldExpandGlobalContextPanel({
       action,
       explicitUserAction: true,

@@ -783,6 +783,7 @@ test('Global Context uses its dedicated right rail without a duplicate Data Laye
   assert.match(html, /id="global-context-panel"/);
   assert.match(html, /id="global-context-flights-btn"/);
   assert.match(html, /id="global-context-missions-btn"/);
+  assert.match(html, /id="global-context-solar-btn"/);
 });
 
 test('Global Context standby describes both chooser modes', () => {
@@ -792,6 +793,7 @@ test('Global Context standby describes both chooser modes', () => {
   assert.ok(match, 'Global Context standby is missing');
   assert.match(match[0], /CONTACTS — nearest planes · vessels · sites/);
   assert.match(match[0], /SPACE MISSIONS — launches &amp; orbital assets/);
+  assert.match(match[0], /SOLAR SYSTEM — planets, moons, orbiters, rovers/);
 });
 
 test('cockpit briefing cycle control keeps its state as the accessible name', () => {

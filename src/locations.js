@@ -6,6 +6,7 @@ import {
   placesNearViewRecovery,
 } from './annotations/annotationResolver.js';
 import { unavailablePlaceSearch } from './search/placeSearch.js';
+import { resolveCameraPitchDeg } from './cameraTiltPolicy.js';
 
 /**
  * Points of Interest per city.
@@ -592,7 +593,7 @@ export const LOCATIONS = Object.entries(CITY_POIS).map(([id, city]) => ({
 export function flyToLandmark(viewer, lat, lon, options = {}) {
   const {
     range = 500,
-    pitch = -30,
+    pitch: requestedPitch = -30,
     heading = 0,
     buildingHeight = 30,
     groundElevation = 0,
@@ -627,6 +628,7 @@ export function flyToLandmark(viewer, lat, lon, options = {}) {
       )
     : range;
 
+  const pitch = resolveCameraPitchDeg(requestedPitch);
   const hpr = new Cesium.HeadingPitchRange(
     Cesium.Math.toRadians(heading),
     Cesium.Math.toRadians(pitch),

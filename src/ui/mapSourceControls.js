@@ -1,4 +1,5 @@
 import { renderMapStackChips, syncMapStackChips } from '../mapStackChips.js';
+import { isSolarSystemRegimeActive } from '../solarSystem/sceneRegime.js';
 
 /**
  * Own Map Source presentation and selection without constructing map providers.
@@ -34,6 +35,7 @@ export function createMapSourceControls({
   }
   async function select(stackId, { syncShare = true } = {}) {
     if (destroyed) return null;
+    if (isSolarSystemRegimeActive()) return controller.getState();
     const current = ++generation;
     if (syncShare) claimSelection();
     const before = controller.getActiveId();

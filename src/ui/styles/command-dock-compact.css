@@ -105,6 +105,8 @@
 #command-dock #location-bar.collapsed .location-city-row,
 #command-dock #location-bar.collapsed .poi-row-container,
 #command-dock #location-bar.collapsed .location-bar-divider,
+#command-dock #location-bar.collapsed .location-tabs,
+#command-dock #location-bar.collapsed .location-tab-view,
 #command-dock #control-panel.collapsed .button-grid {
   display: none !important;
 }
@@ -115,6 +117,7 @@
 }
 
 #command-dock #location-bar:not(.collapsed) .location-city-row,
+#command-dock #location-bar:not(.collapsed) .location-tabs,
 #command-dock #control-panel:not(.collapsed) .button-grid {
   display: flex !important;
   animation: command-dock-reveal 220ms ease-out both;

@@ -20,6 +20,7 @@ import {
   holdContinuousRender,
   releaseContinuousRender,
 } from './renderGovernor.js';
+import { isAngledViewAllowed } from './cameraTiltPolicy.js';
 
 /** °/s by speed word — orbit; pan uses fractions of view height/s. */
 const ORBIT_DEG_S = { slow: 2, normal: 6, fast: 15 };
@@ -1292,6 +1293,13 @@ export function moveCamera(args = {}, runNavigation = null) {
       ok: false,
       action: 'move_camera',
       error: 'rotate needs left or right.',
+    };
+  }
+  if (motion === 'tilt' && !isAngledViewAllowed()) {
+    return {
+      ok: false,
+      action: 'move_camera',
+      error: 'Angled view is off — turn on the tilt control first.',
     };
   }
   if (motion === 'tilt') {

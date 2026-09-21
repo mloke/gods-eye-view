@@ -489,7 +489,9 @@ test('explicit Context transitions claim the visual restore lane before transiti
   const contextPanel = _initGlobalContextPanel.toString();
   for (const [start, end, label] of [
     ["this.listen(this._globalContextFlightsBtn, 'click'", "this.listen(this._globalContextMissionsBtn, 'click'", 'Contacts tab'],
-    ["this.listen(this._globalContextMissionsBtn, 'click'", 'CONTEXT_PANEL_END', 'Space Missions tab'],
+    ["this.listen(this._globalContextMissionsBtn, 'click'", "this.listen(this._globalContextSolarBtn, 'click'", 'Space Missions tab'],
+    ["this.listen(this._globalContextSolarBtn, 'click'", "this.listen(this._globalContextCommandBtn, 'click'", 'Solar System tab'],
+    ["this.listen(this._globalContextCommandBtn, 'click'", 'CONTEXT_PANEL_END', 'Command tab'],
   ]) {
     const startIndex = contextPanel.indexOf(start);
     const endIndex = end === 'CONTEXT_PANEL_END'

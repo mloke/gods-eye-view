@@ -83,6 +83,11 @@ export function createRealtimeBackend({
       signal.throwIfAborted();
       if (!response.ok) {
         await response.body?.cancel?.().catch(() => {});
+        if (response.status === 429) {
+          throw new Error(
+            'OpenAI rate-limited the voice session (HTTP 429). Wait a minute, close extra GEV tabs, and press GEV MIC once.',
+          );
+        }
         throw new Error(`Realtime SDP failed: HTTP ${response.status}`);
       }
       const answer = await response.text();

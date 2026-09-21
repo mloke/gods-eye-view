@@ -1,0 +1,28 @@
+{
+  "_comment": "Template only. Copy to config/geofences.json (gitignored) to keep personal watch zones. Each fence is a closed lon/lat ring. layers currently supports sdpd-reports. The example watches Barrio Logan south of downtown along I-5, including the Home / Newton Ave blocks.",
+  "fences": [
+    {
+      "id": "barrio-logan-sw-i5",
+      "name": "Barrio Logan SW of I-5",
+      "enabled": true,
+      "layers": ["sdpd-reports"],
+      "color": "#f0a63c",
+      "note": "Barrio Logan south of Commercial Street and along I-5, from Harbor Drive east through the Home / Newton Ave blocks.",
+      "ring": [
+        [-117.1455, 32.7065],
+        [-117.144, 32.7035],
+        [-117.1425, 32.7008],
+        [-117.1405, 32.698],
+        [-117.1375, 32.6948],
+        [-117.134, 32.6912],
+        [-117.135, 32.688],
+        [-117.152, 32.687],
+        [-117.1575, 32.69],
+        [-117.16, 32.695],
+        [-117.161, 32.7],
+        [-117.16, 32.7045],
+        [-117.157, 32.7065]
+      ]
+    }
+  ]
+}

@@ -81,6 +81,19 @@ test('expired and malformed client secrets are rejected before SDP exchange', as
   );
 });
 
+test('SDP 429 is reported as an OpenAI rate limit, not a microphone failure', async () => {
+  const backend = createRealtimeBackend({
+    connectionTransport: async () => new Response('', { status: 429 }),
+  });
+  await assert.rejects(
+    backend.negotiate({
+      credential: { token: 'test' },
+      offerSdp: 'offer',
+    }),
+    /rate-limited the voice session/,
+  );
+});
+
 test('cancellation rejects late token and SDP bodies without promoting a stopped connection', async () => {
   for (const phase of ['token', 'sdp']) {
     const lifetime = new AbortController();

@@ -7,6 +7,8 @@ const CONTEXT_DEPENDENCIES = Object.freeze({
     'military-installations',
   ]),
   'space-missions': new Set(['rocket-launches', 'satellites']),
+  'solar-system': new Set(['solar-system']),
+  'home-command': new Set(['home-command']),
 });
 const CONTEXT_COMPANIONS = new Set(['radio']);
 /** Return whether an origin represents a direct user choice on this route. */
@@ -116,7 +118,42 @@ export async function settleUserFacingContextAction({
 export const CONTEXT_ENTRY_LAYER_IDS = Object.freeze([
   'military-awareness',
   'rocket-launches',
+  'solar-system',
+  'home-command',
 ]);
+
+/** Context mode entered by enabling the given shell layer. */
+export const CONTEXT_MODE_BY_ENTRY_LAYER = Object.freeze({
+  'rocket-launches': 'space-missions',
+  'solar-system': 'solar-system',
+  'home-command': 'home-command',
+});
+
+/** Layer that must enable to enter the given Context mode. */
+export function contextEntryLayerId(mode) {
+  if (mode === 'flights') return 'military-awareness';
+  return (
+    Object.entries(CONTEXT_MODE_BY_ENTRY_LAYER).find(
+      ([, contextMode]) => contextMode === mode,
+    )?.[0] || null
+  );
+}
+
+/** Isolated Context mode entered by enabling the given shell layer. */
+export function isolatedContextModeForLayer(layerId) {
+  return CONTEXT_MODE_BY_ENTRY_LAYER[layerId] || null;
+}
+
+/** Operator-facing name for an isolated Context mode. */
+export function isolatedContextLabel(mode) {
+  return (
+    {
+      'space-missions': 'Space Missions',
+      'solar-system': 'Solar System',
+      'home-command': 'Command',
+    }[mode] || 'Context'
+  );
+}
 
 /**
  * Leave a Context transaction: publish the settled coordination flag, then
@@ -235,7 +272,7 @@ export function shouldDeferContextEntryDuringClear({ change, clearInFlight }) {
   return Boolean(
     clearInFlight &&
     change?.type === 'visibility-requested' &&
-    change.layerId === 'rocket-launches' &&
+    ['rocket-launches', 'solar-system', 'home-command'].includes(change.layerId) &&
     change.enabled === true &&
     isExplicitUserIntentOrigin(change.origin, change.layerId) &&
     Number.isInteger(change.intentEpoch),
@@ -328,15 +365,20 @@ export function contextLayerEnableBlockReason({
   change,
   layerName = null,
 }) {
+  const isolation = {
+    'space-missions': 'Space Missions isolates replay data',
+    'solar-system': 'Solar System isolates planetary data',
+    'home-command': 'Command isolates the local site view',
+  }[contextMode];
   if (
-    contextMode !== 'space-missions' ||
+    !isolation ||
     change?.enabled !== true ||
-    contextAllowedLayerIds('space-missions').has(change.layerId)
+    contextAllowedLayerIds(contextMode).has(change.layerId)
   ) {
     return null;
   }
   const label = String(layerName || change.layerId || 'that layer');
-  return `Space Missions isolates replay data. Exit the mode to enable ${label}.`;
+  return `${isolation}. Exit the mode to enable ${label}.`;
 }
 
 /**
@@ -351,7 +393,7 @@ export function contextLayerEnableBlockReason({
 export function spaceMissionEntryCancellationDisposition({ change }) {
   if (
     change?.type !== 'visibility-cancelled' ||
-    change.layerId !== 'rocket-launches' ||
+    !['rocket-launches', 'solar-system', 'home-command'].includes(change.layerId) ||
     change.enabled !== true
   )
     return 'ignore';
@@ -419,6 +461,8 @@ export function cockpitEntryAllowed({
 export const CONTEXT_MODE_VOICE_NAMES = Object.freeze({
   flights: 'contacts',
   'space-missions': 'space-missions',
+  'solar-system': 'solar-system',
+  'home-command': 'command',
 });
 
 /**

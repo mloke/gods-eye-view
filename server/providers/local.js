@@ -1,7 +1,14 @@
 import { openSkyProxy } from './aircraft/opensky.js';
-import { celestrakProxy, rocketLaunchesProxy } from './space.js';
+import {
+  celestrakProxy,
+  planetaryTextureProxy,
+  rocketLaunchesProxy,
+} from './space.js';
 import { tomtomProxy } from './traffic.js';
 import { firmsProxy } from './firms.js';
+import { sdpdReportsProxy } from './sdpd.js';
+import { locationTagsProxy } from './location-tags.js';
+import { geofencesProxy } from './geofences.js';
 import { terrainHeightsProxy } from './terrain.js';
 import { adsbdbProxy } from './aircraft/enrichment.js';
 import { overpassProxy } from './overpass.js';
@@ -26,8 +33,12 @@ function localProviderPlugins() {
   return [
     openSkyProxy(),
     celestrakProxy(),
+    planetaryTextureProxy(),
     tomtomProxy(),
     firmsProxy(),
+    sdpdReportsProxy(),
+    locationTagsProxy(),
+    geofencesProxy(),
     rocketLaunchesProxy(),
     terrainHeightsProxy(),
     adsbdbProxy(),

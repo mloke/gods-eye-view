@@ -12,6 +12,30 @@
     </div>
   </div>
 
+  <!-- Geofence watch log -->
+  <div id="watch-panel" class="panel-collapsible collapsed" data-panel-id="watch-panel">
+    <div class="panel-glow"></div>
+    <div class="watch-panel-inner">
+      <div class="panel-header">
+        <span class="panel-title">WATCH</span>
+        <span class="panel-divider"></span>
+        <button class="panel-collapse-btn" data-collapse-target="watch-panel" title="Collapse panel">+</button>
+      </div>
+      <div class="watch-controls">
+        <button id="watch-enable-btn" class="scene-btn" type="button" aria-pressed="false">WATCH OFF</button>
+        <button id="watch-clear-btn" class="scene-btn" type="button">CLEAR LOG</button>
+      </div>
+      <div class="watch-controls watch-draw-row">
+        <input id="watch-zone-name" type="text" maxlength="80" placeholder="Zone name" autocomplete="off" />
+        <button id="watch-draw-btn" class="scene-btn" type="button" aria-pressed="false">DRAW ZONE</button>
+      </div>
+      <div id="watch-draw-hint" class="watch-hint" hidden></div>
+      <div id="watch-fences" class="watch-fences"></div>
+      <div id="watch-status" class="watch-status">Turn watch on or draw a zone to log SDPD reports.</div>
+      <div id="watch-list" class="watch-list"></div>
+    </div>
+  </div>
+
   <!-- CCTV Coverage Panel -->
   <div id="cctv-panel" class="panel-collapsible collapsed" data-panel-id="cctv-panel">
     <div class="panel-glow"></div>

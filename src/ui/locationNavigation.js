@@ -23,6 +23,10 @@ export class LocationNavigation {
     this._activeLocationId = null;
     this._expandedCityId = null;
     this._activePoiIndex = null;
+    this._locationTab = 'cities';
+    this._activeSavedPlaceId = null;
+    this._savedPlaces = [];
+    this._savedPlacesGeneration = 0;
     this._currentTarget = null;
     this._currentPoi = null;
     this._searchedLocationLabel = null;
@@ -84,6 +88,7 @@ export class LocationNavigation {
     else if (change.type === 'found') {
       this._searchedLocationLabel = state.destination.label || state.query;
       this._setActiveLocation(null);
+      this._clearSavedPlace();
       this._currentPoi = null;
       this._collapsePOIRow();
       this._updateLocationMiniStatus();
@@ -132,6 +137,11 @@ export class LocationNavigation {
         resetButtons: [this._resetGlobeBtn, this._cockpitResetGlobeBtn],
         statusCity: this._locationMiniCity,
         statusPoi: this._locationMiniPoi,
+        tabCities: this._locationTabCities,
+        tabSaved: this._locationTabSaved,
+        citiesView: this._locationCitiesView,
+        savedView: this._locationSavedView,
+        savedList: this._locationSavedList,
       },
       cities: CITY_POIS,
       getExpandedCity: () => this._expandedCityId,
@@ -139,7 +149,11 @@ export class LocationNavigation {
       onPoi: (id, index) => this._onPoiClick(id, index),
       onSearch: (query) => this._locationLookup.run(query),
       onReset: () => this.resetToGlobeView(),
+      onTab: (tab) => this._onLocationTab(tab),
+      onSavedPlace: (id) => this._onSavedPlaceClick(id),
     });
+    this._locationControls.setTab(this._locationTab);
+    void this._loadSavedPlaces();
   }
 
   _beginWorldJumpTransition() {
@@ -253,8 +267,84 @@ export class LocationNavigation {
     // A preset city is now what the camera is framed on, so any earlier
     // free-text destination has been superseded. Clearing only on a real id
     // leaves the search path's own _setActiveLocation(null) untouched.
-    if (locationId) this._searchedLocationLabel = null;
+    if (locationId) {
+      this._searchedLocationLabel = null;
+      this._clearSavedPlace();
+    }
     this._locationControls?.highlightCity(locationId);
+    this._updateLocationMiniStatus();
+  }
+
+  _clearSavedPlace() {
+    if (this._activeSavedPlaceId === null) return;
+    this._activeSavedPlaceId = null;
+    this._locationControls?.highlightSavedPlace(null);
+  }
+
+  _onLocationTab(tab) {
+    if (this._disposed) return;
+    const next = tab === 'saved' ? 'saved' : 'cities';
+    if (this._locationTab === next) return;
+    this._locationTab = next;
+    this._locationControls?.setTab(next);
+    if (next === 'saved') {
+      this._collapsePOIRow();
+      void this._loadSavedPlaces();
+    }
+  }
+
+  async _loadSavedPlaces() {
+    const load = this.services.loadSavedPlaces;
+    if (typeof load !== 'function' || this._disposed) return;
+    const generation = ++this._savedPlacesGeneration;
+    if (!this._savedPlaces.length) {
+      this._locationControls?.renderSavedPlaces([], {
+        emptyMessage: 'Loading saved places…',
+      });
+    }
+    try {
+      const rows = await load();
+      if (this._disposed || generation !== this._savedPlacesGeneration) return;
+      this._savedPlaces = Array.isArray(rows) ? rows : [];
+      this._locationControls?.renderSavedPlaces(this._savedPlaces);
+      this._locationControls?.highlightSavedPlace(this._activeSavedPlaceId);
+      this._locationControls?.setSavedCount(this._savedPlaces.length);
+    } catch {
+      if (this._disposed || generation !== this._savedPlacesGeneration) return;
+      this._savedPlaces = [];
+      this._locationControls?.renderSavedPlaces([], {
+        emptyMessage: "Couldn't load saved places.",
+      });
+      this._locationControls?.setSavedCount(0);
+    }
+  }
+
+  _onSavedPlaceClick(placeId) {
+    if (this._disposed) return;
+    const { flyToLandmark } = this.services;
+    const place = this._savedPlaces.find((row) => row.stableId === placeId);
+    if (!place || typeof flyToLandmark !== 'function') return;
+    const leavingCity = Boolean(this._activeLocationId);
+    const result = this._flyWithTransition(leavingCity, (hooks) =>
+      flyToLandmark(this.viewer, place.lat, place.lon, {
+        range: 800,
+        pitch: -30,
+        heading: 10,
+        ...hooks,
+      }),
+    );
+    if (result === false) return;
+    this._setActiveLocation(null);
+    this._searchedLocationLabel = null;
+    this._activeSavedPlaceId = place.stableId;
+    this._activePoiIndex = null;
+    this._locationControls?.highlightSavedPlace(place.stableId);
+    this._currentPoi = {
+      name: place.name,
+      alt: 800,
+      pitch: -30,
+    };
+    if (result?.targetPosition) this._currentTarget = result.targetPosition;
     this._updateLocationMiniStatus();
   }
 
@@ -263,6 +353,11 @@ export class LocationNavigation {
     this._locationControls?.renderStatus({
       city: this._activeLocationId ? CITY_POIS[this._activeLocationId] : null,
       currentPoi: this._currentPoi,
+      savedPlace: this._activeSavedPlaceId
+        ? this._savedPlaces.find(
+            (row) => row.stableId === this._activeSavedPlaceId,
+          )
+        : null,
       searchedLabel: this._searchedLocationLabel,
     });
   }
@@ -413,6 +508,7 @@ export class LocationNavigation {
   destroy() {
     if (this._disposed) return;
     this._disposed = true;
+    this._savedPlacesGeneration++;
     this._locationState.destroy();
     this._locationLookupUnsubscribe?.();
     this._locationLookupUnsubscribe = null;

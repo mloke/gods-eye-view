@@ -62,6 +62,17 @@ export const DATA_CREDITS = [
       '(submodule vendor/homealone; local demo, not connected to a dedicated security PC)',
   },
   {
+    key: 'solar-system',
+    html:
+      'Solar System bodies &amp; maps: JPL approximate planetary elements ' +
+      '(<a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener">ssd.jpl.nasa.gov</a>); ' +
+      'physical data from the ' +
+      '<a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA Planetary Fact Sheet</a>; ' +
+      'planetary maps from ' +
+      '<a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> ' +
+      '(CC BY 4.0). Orbiters, landers, rovers, and probes are curated last-known positions, not live telemetry.',
+  },
+  {
     key: 'launch-library-2',
     html:
       'Space mission launch, payload &amp; recovery metadata: ' +
@@ -71,6 +82,13 @@ export const DATA_CREDITS = [
   {
     key: 'usgs',
     html: 'Earthquakes: Data courtesy of the U.S. Geological Survey',
+  },
+  {
+    key: 'sdpd-nibrs',
+    html:
+      'San Diego police reports: San Diego Police Department NIBRS crime offenses — ' +
+      '<a href="https://data.sandiego.gov/datasets/police-nibrs/" target="_blank" rel="noopener">data.sandiego.gov</a> ' +
+      '(informational only; hundred-block locations)',
   },
   {
     key: 'overpass',
