@@ -113,7 +113,7 @@ Use **Node.js 24.x (24.14.0 or later) or 26.x**. The setup doctor warns about
 Node 25, which is end-of-life.
 
 ```bash
-git clone https://github.com/bilawalsidhu/gods-eye-view.git
+git clone --recurse-submodules https://github.com/bilawalsidhu/gods-eye-view.git
 cd gods-eye-view
 npm ci
 npm run doctor
@@ -131,6 +131,21 @@ This is a comparison baseline, not a guarantee for your machine or connection.
 See [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 </details>
+
+If this checkout already exists without `vendor/homealone`, run
+`git submodule update --init --recursive`. The HOME context reads the
+[HomeAlone](https://github.com/mloke/HomeAlone) command-view site from that
+submodule. Develop HomeAlone in its own repo, then in this app:
+
+```bash
+git -C vendor/homealone fetch origin
+git -C vendor/homealone checkout origin/main
+npm run sync:homealone
+```
+
+`sync:homealone` refreshes the JSON snapshots under `src/data/homeCommand/`
+that the browser bundle imports. GEV still owns the Context overlay, demo
+engine, and chrome — not HomeAlone's dedicated-PC stack.
 
 **macOS shortcut:** `./scripts/dev-fresh.sh` clears the Vite cache and pulls any
 configured keys straight from the Keychain. It starts keyless too.

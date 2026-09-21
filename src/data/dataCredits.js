@@ -56,6 +56,12 @@ export const DATA_CREDITS = [
       'Dr. T.S. Kelso',
   },
   {
+    key: 'home-command',
+    html:
+      'Command view site layout: HomeAlone CAD / inventory ' +
+      '(submodule vendor/homealone; local demo, not connected to a dedicated security PC)',
+  },
+  {
     key: 'launch-library-2',
     html:
       'Space mission launch, payload &amp; recovery metadata: ' +

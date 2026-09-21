@@ -1,0 +1,205 @@
+{
+  "type": "FeatureCollection",
+  "name": "merged",
+  "source": "BUILDING.DXF\u2192BUILDING, YARD.DXF\u2192YARD, CAMERA_FRONT_DOOR.DXF\u2192CAMERA_front_door",
+  "units": "meters",
+  "source_units": "inch",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "lot",
+      "properties": {
+        "kind": "lot",
+        "name": "Lot"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -8.734,
+              -10.984
+            ],
+            [
+              7.884,
+              -10.984
+            ],
+            [
+              7.884,
+              17.784000000000002
+            ],
+            [
+              -8.734,
+              17.784000000000002
+            ],
+            [
+              -8.734,
+              -10.984
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "building",
+      "properties": {
+        "kind": "building",
+        "name": "House",
+        "zone": null,
+        "units_in": "inch"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -4.65,
+              -2.0
+            ],
+            [
+              -5.9,
+              -0.8
+            ],
+            [
+              -5.9,
+              1.7000000000000002
+            ],
+            [
+              -4.65,
+              2.95
+            ],
+            [
+              -4.65,
+              6.800000000000001
+            ],
+            [
+              4.65,
+              6.800000000000001
+            ],
+            [
+              4.65,
+              -5.6000000000000005
+            ],
+            [
+              -0.4,
+              -5.6000000000000005
+            ],
+            [
+              -0.4,
+              -6.800000000000001
+            ],
+            [
+              -4.65,
+              -6.800000000000001
+            ],
+            [
+              -4.65,
+              -2.0
+            ]
+          ],
+          [
+            [
+              -4.55,
+              -2.0
+            ],
+            [
+              -5.800000000000001,
+              -0.75
+            ],
+            [
+              -5.800000000000001,
+              1.7000000000000002
+            ],
+            [
+              -4.55,
+              2.9000000000000004
+            ],
+            [
+              -4.55,
+              6.7
+            ],
+            [
+              4.55,
+              6.7
+            ],
+            [
+              4.55,
+              -5.5
+            ],
+            [
+              -0.5,
+              -5.5
+            ],
+            [
+              -0.5,
+              -6.7
+            ],
+            [
+              -4.55,
+              -6.7
+            ],
+            [
+              -4.55,
+              -2.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "yard",
+      "properties": {
+        "kind": "yard",
+        "name": "Yard",
+        "zone": "yard",
+        "units_in": "inch"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.75,
+              15.8
+            ],
+            [
+              5.9,
+              15.8
+            ],
+            [
+              5.9,
+              -9.0
+            ],
+            [
+              -6.75,
+              -9.0
+            ],
+            [
+              -6.75,
+              15.8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "front_door",
+      "properties": {
+        "kind": "camera",
+        "name": "front door",
+        "inventory_id": "front_door",
+        "heading": -146.0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.111386750633979,
+          -5.8063281137975595
+        ]
+      }
+    }
+  ]
+}

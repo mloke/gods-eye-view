@@ -1,0 +1,220 @@
+{
+  "site": {
+    "name": "Home",
+    "units": "meters",
+    "address": "1695 Logan Ave, San Diego, CA 92113",
+    "street": "Logan Ave",
+    "north_screen_deg": 135,
+    "satellite": "/static/satellite/1695-logan-site.jpg",
+    "satellite_fit": {
+      "x": -19.624,
+      "y": -17.361,
+      "width": 44.779,
+      "height": 36.137
+    }
+  },
+  "storage": {
+    "mount": "/mnt/homealone",
+    "video_days": 30,
+    "log_days": 90
+  },
+  "recognition": {
+    "enabled": true,
+    "detect": false,
+    "objects": [
+      "person",
+      "dog",
+      "cat",
+      "bird"
+    ],
+    "person_height_m": 1.7,
+    "animal_height_m": 0.5
+  },
+  "alarm": {
+    "entity": "alarm_control_panel.house",
+    "exit_delay_s": 15,
+    "entry_delay_s": 20,
+    "trigger_s": 600
+  },
+  "zones": {
+    "entry": {
+      "name": "Entry",
+      "kind": "perimeter",
+      "arm_home": true,
+      "arm_away": true
+    },
+    "driveway": {
+      "name": "Driveway",
+      "kind": "outdoor",
+      "arm_home": false,
+      "arm_away": true
+    },
+    "yard": {
+      "name": "Yard",
+      "kind": "outdoor",
+      "arm_home": false,
+      "arm_away": true
+    },
+    "garage": {
+      "name": "Garage",
+      "kind": "perimeter",
+      "arm_home": true,
+      "arm_away": true
+    },
+    "kitchen": {
+      "name": "Kitchen",
+      "kind": "perimeter",
+      "arm_home": true,
+      "arm_away": true
+    },
+    "interior": {
+      "name": "Interior",
+      "kind": "interior",
+      "arm_home": false,
+      "arm_away": true
+    },
+    "bedroom": {
+      "name": "Bedroom",
+      "kind": "sleep",
+      "arm_home": false,
+      "arm_away": true
+    }
+  },
+  "cameras": [
+    {
+      "id": "front_door",
+      "name": "Front door",
+      "zone": "entry",
+      "heading": -146,
+      "fov": 70,
+      "range_m": 8,
+      "covers": [
+        "front_door"
+      ],
+      "go2rtc": "ffmpeg:testsrc",
+      "rtsp": "rtsp://127.0.0.1:8554/front_door",
+      "x": 1.039,
+      "y": -6.028
+    }
+  ],
+  "sensors": [
+    {
+      "id": "front_door",
+      "name": "Front door",
+      "kind": "door",
+      "zone": "entry",
+      "perimeter": true,
+      "entry_delay": true,
+      "ha_entity": "binary_sensor.front_door",
+      "mqtt_topic": "homealone/sensor/front_door",
+      "mqtt_on": "open",
+      "mqtt_off": "closed",
+      "device_class": "door"
+    },
+    {
+      "id": "back_door",
+      "name": "Back door",
+      "kind": "door",
+      "zone": "yard",
+      "perimeter": true,
+      "ha_entity": "binary_sensor.back_door",
+      "mqtt_topic": "homealone/sensor/back_door",
+      "mqtt_on": "open",
+      "mqtt_off": "closed",
+      "device_class": "door"
+    },
+    {
+      "id": "garage_door",
+      "name": "Garage door",
+      "kind": "door",
+      "zone": "garage",
+      "perimeter": true,
+      "ha_entity": "binary_sensor.garage_door",
+      "mqtt_topic": "homealone/sensor/garage_door",
+      "mqtt_on": "open",
+      "mqtt_off": "closed",
+      "device_class": "garage_door"
+    },
+    {
+      "id": "kitchen_window",
+      "name": "Kitchen window",
+      "kind": "window",
+      "zone": "kitchen",
+      "perimeter": true,
+      "ha_entity": "binary_sensor.kitchen_window",
+      "mqtt_topic": "homealone/sensor/kitchen_window",
+      "mqtt_on": "open",
+      "mqtt_off": "closed",
+      "device_class": "window"
+    },
+    {
+      "id": "hallway_motion",
+      "name": "Hallway motion",
+      "kind": "motion",
+      "zone": "interior",
+      "ha_entity": "binary_sensor.hallway_motion",
+      "mqtt_topic": "homealone/motion/hallway",
+      "mqtt_on": "on",
+      "mqtt_off": "off",
+      "device_class": "motion",
+      "off_delay": 20
+    },
+    {
+      "id": "living_presence",
+      "name": "Living presence",
+      "kind": "presence",
+      "zone": "interior",
+      "ha_entity": "binary_sensor.living_presence",
+      "mqtt_topic": "homealone/presence/living_room",
+      "mqtt_on": "on",
+      "mqtt_off": "off",
+      "device_class": "occupancy"
+    }
+  ],
+  "defense": [
+    {
+      "id": "siren",
+      "name": "Siren",
+      "kind": "siren",
+      "zone": "interior",
+      "ha_entity": "input_boolean.siren",
+      "icon": "mdi:bullhorn",
+      "activates_for_zones": [
+        "*"
+      ]
+    },
+    {
+      "id": "yard_floods",
+      "name": "Yard floods",
+      "kind": "light",
+      "zone": "yard",
+      "ha_entity": "input_boolean.yard_floods",
+      "icon": "mdi:flood-light",
+      "activates_for_zones": [
+        "yard",
+        "driveway"
+      ]
+    },
+    {
+      "id": "porch_light",
+      "name": "Porch light",
+      "kind": "light",
+      "zone": "entry",
+      "ha_entity": "input_boolean.porch_light",
+      "icon": "mdi:outdoor-lamp",
+      "activates_for_zones": [
+        "entry",
+        "garage",
+        "kitchen"
+      ]
+    },
+    {
+      "id": "front_lock",
+      "name": "Front lock",
+      "kind": "lock",
+      "zone": "entry",
+      "ha_entity": null,
+      "activates_for_zones": []
+    }
+  ]
+}

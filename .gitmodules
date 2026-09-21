@@ -1,0 +1,4 @@
+[submodule "homealone"]
+	path = vendor/homealone
+	url = https://github.com/mloke/HomeAlone.git
+	branch = main

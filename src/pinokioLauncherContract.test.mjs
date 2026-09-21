@@ -69,6 +69,7 @@ test('Pinokio install records success explicitly instead of trusting node_module
   assert.match(installSource, /includeKeychain: false/);
   assert.match(installSource, /authoritativeEnvironment: true/);
   assert.match(installSource, /applyPinokioEnvironment\(\)/);
+  assert.match(installSource, /submodule', 'update', '--init', '--recursive/);
   assert.match(installSource, /Return to Pinokio and choose Start/);
   for (const field of APP_VALUE_FIELDS) {
     assertAppFieldForwarded(install.run.at(-1).params.env, field);

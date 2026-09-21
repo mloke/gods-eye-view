@@ -101,6 +101,7 @@ The [Bhote Koshi event pack](public/events/bhote-koshi-2026/README.md), under `p
 | **Natural Earth physical regions** (1,046 land + 292 marine named polygons) | `natural_earth/`                  | **Public domain**                                                                                         | ✅ (no restrictions)                             | "Made with Natural Earth" (courtesy credit — not legally required)          |
 | **DataSF Analysis Neighborhoods** (41 SF neighborhood polygons)             | `neighborhoods/`                  | **PDDL 1.0** (public domain)                                                                              | ✅ (no restrictions)                             | "City & County of San Francisco — DataSF" (courtesy — not legally required) |
 | **CCTV ground heights** (3,445 cameras)                                     | `cctv_ground_heights/`            | Precomputed camera placement heights, aligned to work with Google Photorealistic 3D Tiles (folder README) | —                                                | —                                                                           |
+| **HomeAlone command view** (local demo house)                               | `vendor/homealone/site/`          | Site CAD / inventory from the HomeAlone submodule (`npm run sync:homealone`); GEV overlay is a local demo, not a live security feed | ✅                                               | "HomeAlone command view · local demo"                                       |
 
 ### ⚠️ TeleGeography is bundled but NonCommercial
 

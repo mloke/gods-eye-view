@@ -8,6 +8,7 @@ import {
   CREDENTIALS,
   classifyNodeVersion,
   formatSetupReport,
+  hasHomeAloneSubmodule,
   hasRequiredDependencies,
   isConfiguredValue,
   npmProcessSpec,
@@ -245,4 +246,43 @@ test('doctor never calls a dependency-missing setup ready', () => {
   assert.match(output, /dependencies missing; run npm install/);
   assert.match(output, /Setup needs attention/);
   assert.doesNotMatch(output, /Ready\. Run/);
+});
+
+test('doctor requires the HomeAlone submodule only when .gitmodules is present', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'gev-doctor-homealone-'));
+  try {
+    assert.deepEqual(hasHomeAloneSubmodule(root), {
+      required: false,
+      present: true,
+    });
+    writeFileSync(path.join(root, '.gitmodules'), '[submodule "homealone"]\n');
+    assert.deepEqual(hasHomeAloneSubmodule(root), {
+      required: true,
+      present: false,
+    });
+    mkdirSync(path.join(root, 'vendor', 'homealone', 'site'), { recursive: true });
+    writeFileSync(path.join(root, 'vendor', 'homealone', 'site', 'layout.geojson'), '{}');
+    writeFileSync(path.join(root, 'vendor', 'homealone', 'site', 'inventory.yaml'), 'site: {}\n');
+    assert.deepEqual(hasHomeAloneSubmodule(root), {
+      required: true,
+      present: true,
+    });
+    const output = formatSetupReport({
+      ready: false,
+      node: { level: 'ok', version: '24.14.0', summary: 'supported' },
+      npm: { available: true, version: '11.0.0' },
+      dependenciesInstalled: true,
+      homeAlone: { required: true, present: false },
+      capabilities: buildCapabilitySummary(
+        Object.fromEntries(CREDENTIALS.map((spec) => [spec.name, { configured: false }])),
+      ),
+      credentials: Object.fromEntries(
+        CREDENTIALS.map((spec) => [spec.name, { configured: false }]),
+      ),
+    });
+    assert.match(output, /HomeAlone submodule missing/);
+    assert.match(output, /git submodule update --init --recursive/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

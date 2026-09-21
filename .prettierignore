@@ -11,6 +11,7 @@ pinokio/.installed
 src/data/local_data/
 *.geojson
 *.geojsonl
+vendor/
 
 # Local configuration, generated assets and browser evidence
 .env

@@ -7,7 +7,7 @@ Thanks for being here. God's Eye View is an open foundation for live spatial int
 Use Node.js 24.14.x or 26.x (also enforced by `package.json`).
 
 ```bash
-git clone https://github.com/bilawalsidhu/gods-eye-view.git
+git clone --recurse-submodules https://github.com/bilawalsidhu/gods-eye-view.git
 cd gods-eye-view
 nvm install 24.14.0
 nvm use 24.14.0
@@ -24,6 +24,13 @@ On macOS the launcher pulls optional keys from
 the Keychain; on any platform you can pass them as env vars or use a `.env`.
 People who only want to run the app can instead install the repository directly
 through Pinokio; the terminal path above remains the contributor path.
+
+The HOME context uses the [HomeAlone](https://github.com/mloke/HomeAlone)
+command view as a git submodule at `vendor/homealone`. Clone with
+`--recurse-submodules`, or run `git submodule update --init --recursive`.
+After you bump that pointer, run `npm run sync:homealone` so
+`src/data/homeCommand/` picks up site layout and inventory. Keep GEV Context
+chrome here; keep dedicated-PC/server work in HomeAlone.
 
 Open `http://localhost:4173`. Before sending a PR run `npm run build`, `npm test`, and `npm run test:track` (dev server must be up) — **all three must stay green.**
 

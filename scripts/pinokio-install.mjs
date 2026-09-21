@@ -21,9 +21,19 @@ export function runChecked(command, args, { shell = false } = {}) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
+export function initGitSubmodules() {
+  const inside = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  if (inside.status !== 0) return;
+  runChecked('git', ['submodule', 'update', '--init', '--recursive']);
+}
+
 export function installPinokioDependencies() {
   applyPinokioEnvironment();
   rmSync(READY_FILE, { force: true });
+  initGitSubmodules();
   const npm = npmProcessSpec();
   runChecked(npm.command, ['ci'], { shell: npm.shell });
 

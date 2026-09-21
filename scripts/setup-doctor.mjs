@@ -153,6 +153,18 @@ export function buildCapabilitySummary(credentials) {
   };
 }
 
+export function hasHomeAloneSubmodule(rootDir = ROOT) {
+  const gitmodules = path.join(rootDir, '.gitmodules');
+  if (!existsSync(gitmodules)) return { required: false, present: true };
+  const site = path.join(rootDir, 'vendor', 'homealone', 'site');
+  return {
+    required: true,
+    present:
+      existsSync(path.join(site, 'layout.geojson')) &&
+      existsSync(path.join(site, 'inventory.yaml')),
+  };
+}
+
 export function inspectSetup({ includeKeychain = true, authoritativeEnvironment = false, rootDir = ROOT } = {}) {
   const node = classifyNodeVersion();
   const npm = npmProcessSpec();
@@ -165,13 +177,19 @@ export function inspectSetup({ includeKeychain = true, authoritativeEnvironment 
     resolveCredential(spec, { includeKeychain, authoritativeEnvironment, rootDir }),
   ]));
   const dependenciesInstalled = hasRequiredDependencies(rootDir);
+  const homeAlone = hasHomeAloneSubmodule(rootDir);
   return {
-    ready: node.level !== 'error' && npmResult.status === 0 && dependenciesInstalled,
+    ready:
+      node.level !== 'error' &&
+      npmResult.status === 0 &&
+      dependenciesInstalled &&
+      homeAlone.present,
     node: { version: process.versions.node, ...node },
     npm: npmResult.status === 0
       ? { available: true, version: String(npmResult.stdout || '').trim() }
       : { available: false, version: null },
     dependenciesInstalled,
+    homeAlone,
     credentials,
     capabilities: buildCapabilitySummary(credentials),
   };
@@ -195,6 +213,11 @@ export function formatSetupReport(report, { readyMessage } = {}) {
     `[${symbol(report.node.level)}] Node ${report.node.version}: ${report.node.summary}`,
     report.npm.available ? `[OK] npm ${report.npm.version}` : '[ERROR] npm was not found',
     report.dependenciesInstalled ? '[OK] dependencies installed' : '[WARN] dependencies missing; run npm install',
+    report.homeAlone?.required && !report.homeAlone.present
+      ? '[ERROR] HomeAlone submodule missing; run git submodule update --init --recursive'
+      : report.homeAlone?.required
+        ? '[OK] HomeAlone submodule'
+        : null,
     '',
     `Map:     ${report.capabilities.map}`,
     `Flights: ${report.capabilities.flights}`,
@@ -216,7 +239,7 @@ export function formatSetupReport(report, { readyMessage } = {}) {
       ? resolvedReadyMessage
       : 'Setup needs attention before the app can start.',
   ];
-  return lines.join('\n');
+  return lines.filter((line) => line != null).join('\n');
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
