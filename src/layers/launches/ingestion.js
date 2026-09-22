@@ -168,9 +168,12 @@ export function createIngestion({
   async function performMissionUpdate(token) {
     try {
       ensureActiveTleLookup(token);
-      const payload = await source.getLaunches({
-        signal: layerState._sourceController.signal,
-      });
+      const [payload, notices] = await Promise.all([
+        source.getLaunches({
+          signal: layerState._sourceController.signal,
+        }),
+        loadSpaceRestrictions(),
+      ]);
       const launches = parts.model.normalizeRocketLaunches(payload);
       if (
         !layerState._enabled ||
@@ -181,6 +184,7 @@ export function createIngestion({
       const activeTleText = layerState._activeTleText;
       if (layerState._replayCameraLaunchId) parts.replay.stopMissionReplay();
       layerState._launches = launches;
+      layerState._spaceRestrictions = notices;
       parts.orbitRendering.removeMissionOrbitPrimitives();
       layerState._dataSource.entities.removeAll();
       layerState._missionOverlayRecords.clear();
@@ -219,6 +223,29 @@ export function createIngestion({
         layerState._lastError = error.message;
         console.warn('[Data:RocketLaunches] Fetch error:', error);
       }
+    }
+  }
+
+  async function loadSpaceRestrictions() {
+    if (typeof source.getSpaceRestrictions !== 'function')
+      return layerState._spaceRestrictions || [];
+    try {
+      const payload = await source.getSpaceRestrictions({
+        signal: layerState._sourceController.signal,
+      });
+      if (!Array.isArray(payload?.notices))
+        throw new Error('Malformed space restriction snapshot');
+      return payload.notices.filter(
+        (notice) =>
+          notice &&
+          typeof notice.id === 'string' &&
+          Array.isArray(notice.areas) &&
+          notice.areas.length > 0,
+      );
+    } catch (error) {
+      if (error?.name === 'AbortError') throw error;
+      console.warn('[Data:RocketLaunches] Space restriction feed unavailable');
+      return layerState._spaceRestrictions || [];
     }
   }
 

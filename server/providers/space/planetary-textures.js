@@ -3,9 +3,15 @@ import { promises as fsp } from 'node:fs';
 
 /**
  * Cached proxy for public-domain / CC planetary maps used as Solar System
- * entity materials. Only the allowlisted Solar System Scope 2k maps are
- * fetched. Failures are the client's problem — the layer falls back to color.
+ * entity materials. Planets use Solar System Scope 2k maps (CC BY 4.0).
+ * Moons use NASA 3D Resources JPEGs (U.S. public domain). Failures are the
+ * client's problem — the layer falls back to color.
  */
+function nasa3d(name) {
+  const path = `Images and Textures/${name}/${name}.jpg`.replace(/ /g, '%20');
+  return `https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/${path}`;
+}
+
 const TEXTURES = Object.freeze({
   sun: 'https://www.solarsystemscope.com/textures/download/2k_sun.jpg',
   mercury: 'https://www.solarsystemscope.com/textures/download/2k_mercury.jpg',
@@ -17,6 +23,25 @@ const TEXTURES = Object.freeze({
   saturn: 'https://www.solarsystemscope.com/textures/download/2k_saturn.jpg',
   uranus: 'https://www.solarsystemscope.com/textures/download/2k_uranus.jpg',
   neptune: 'https://www.solarsystemscope.com/textures/download/2k_neptune.jpg',
+  phobos: nasa3d('Mars - Phobos'),
+  deimos: nasa3d('Mars - Deimos'),
+  io: nasa3d('Jupiter - Io (A)'),
+  europa: nasa3d('Jupiter - Europa'),
+  ganymede: nasa3d('Jupiter - Ganymede'),
+  callisto: nasa3d('Jupiter - Callisto'),
+  mimas: nasa3d('Saturn - Mimas'),
+  enceladus: nasa3d('Saturn - Enceladus'),
+  dione: nasa3d('Saturn - Dione'),
+  rhea: nasa3d('Saturn - Rhea'),
+  titan: nasa3d('Saturn - Titan'),
+  iapetus: nasa3d('Saturn - Iapetus'),
+  miranda: nasa3d('Uranus - Miranda'),
+  ariel: nasa3d('Uranus - Ariel'),
+  umbriel: nasa3d('Uranus - Umbriel'),
+  titania: nasa3d('Uranus - Titania'),
+  oberon: nasa3d('Uranus - Oberon'),
+  triton: nasa3d('Neptune - Triton'),
+  charon: nasa3d('Pluto - Charon'),
 });
 
 const TTL_MS = 30 * 24 * 3600_000;

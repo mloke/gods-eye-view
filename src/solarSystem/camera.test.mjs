@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cesium from 'cesium';
 import {
+  SOLAR_CAMERA_FAR_M,
+  SOLAR_CAMERA_NEAR_M,
+} from './scale.js';
+import {
   applySolarCameraController,
   attachSolarCameraControls,
   captureSolarCameraController,
@@ -83,8 +87,8 @@ test('solar camera drops Earth north constraint and widens the frustum', () => {
   const captured = captureSolarCameraController(viewer);
   applySolarCameraController(viewer);
   assert.equal(viewer.camera.constrainedAxis, undefined);
-  assert.equal(viewer.camera.frustum.near, 10_000);
-  assert.equal(viewer.camera.frustum.far, 50_000_000_000);
+  assert.equal(viewer.camera.frustum.near, SOLAR_CAMERA_NEAR_M);
+  assert.equal(viewer.camera.frustum.far, SOLAR_CAMERA_FAR_M);
   restoreSolarCameraController(viewer, captured);
   assert.equal(viewer.camera.constrainedAxis.z, 1);
   assert.equal(viewer.camera.frustum.near, 1);

@@ -25,6 +25,7 @@ test('Mars and Europa format into readable fact sheets', () => {
   assert.match(mars.blurb, /1\.52 AU/);
   assert.ok(mars.rows.some((row) => row.label === 'Gravity' && row.value.includes('3.71')));
   assert.ok(mars.rows.some((row) => row.label === 'Air' && /CO/.test(row.value)));
+  assert.ok(mars.rows.some((row) => row.label === 'Now' && /AU/.test(row.value)));
   const europa = formatPlanetaryData('europa');
   assert.match(europa.blurb, /moon of Jupiter/);
   assert.ok(europa.rows.some((row) => row.label === 'Jupiter'));
@@ -36,4 +37,21 @@ test('the Solar System panel prints planetary data for a focused world', () => {
   assert.match(root.innerHTML, /PLANETARY DATA/);
   assert.match(root.innerHTML, /Thin CO₂|Thin CO2/);
   assert.match(root.innerHTML, /NASA Planetary Fact Sheet/);
+  assert.match(root.innerHTML, /moons · .* craft/);
+  assert.match(root.innerHTML, /AU now/);
+  assert.match(root.innerHTML, /data-solar-filter="ended"/);
+  assert.match(root.innerHTML, /data-solar-asset="curiosity"/);
+});
+
+test('the Solar System panel groups, filters, and inspects spacecraft', () => {
+  const root = { innerHTML: '', querySelector() { return null; }, querySelectorAll() { return []; } };
+  renderSolarSystemPanel(root, {
+    focusedBodyId: 'mars',
+    selectedAssetId: 'curiosity',
+    assetFilter: 'surface',
+  });
+  assert.match(root.innerHTML, /solar-system-asset-inspect/);
+  assert.match(root.innerHTML, /ROVERS/);
+  assert.match(root.innerHTML, /data-solar-asset="curiosity"/);
+  assert.doesNotMatch(root.innerHTML, /data-solar-asset="maven"/);
 });

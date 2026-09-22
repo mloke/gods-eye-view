@@ -21,5 +21,15 @@ export function createLaunchSource({
       signal?.throwIfAborted();
       return text;
     },
+    async getSpaceRestrictions({ signal } = {}) {
+      signal?.throwIfAborted();
+      const response = await fetchImpl('/api/space-restrictions', { signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      signal?.throwIfAborted();
+      if (!payload || !Array.isArray(payload.notices))
+        throw new Error('Malformed space restriction snapshot');
+      return payload;
+    },
   };
 }

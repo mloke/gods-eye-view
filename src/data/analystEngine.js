@@ -77,6 +77,11 @@ export const ANALYST_LAYERS = {
     text: ['name', 'tags', 'note'],
     flags: [],
   },
+  weather: {
+    numeric: ['temperatureC', 'windKph', 'weatherCode'],
+    text: ['condition'],
+    flags: [],
+  },
 };
 
 const EARTH_R_KM = 6371;

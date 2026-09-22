@@ -48,6 +48,7 @@ test('Context starts with an explicit idle snapshot', (t) => {
     canContact: true,
     canMission: true,
     canSolar: true,
+    canCommand: true,
     snapshotCaptured: false,
   });
 });

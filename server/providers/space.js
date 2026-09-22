@@ -6,3 +6,4 @@ export {
   LL2_CACHE_TTL_MS,
   launchLibraryRequestHeaders,
 } from './space/launch-library.js';
+export { spaceOperationRestrictionsProxy } from './space/operation-restrictions.js';

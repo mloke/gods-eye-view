@@ -4371,6 +4371,49 @@ test('ALPR common names toggle only the registered camera layer through the norm
   }
 });
 
+test('weather voice aliases resolve to the weather layer', async () => {
+  globalThis.window = globalThis.window || {
+    clearTimeout,
+    setTimeout,
+    requestIdleCallback: null,
+  };
+  const calls = [];
+  let enabled = false;
+  const dataManager = {
+    layers: new Map([['weather', { module: {} }]]),
+    getAll: () => [{ id: 'weather', name: 'Weather' }],
+    isEnabled: () => enabled,
+    setEnabled: async (id, value) => {
+      calls.push([id, value]);
+      enabled = value;
+      return true;
+    },
+  };
+  const runner = createGevActionRunner({
+    viewer: {
+      clock: { onTick: { addEventListener: () => () => {} } },
+      scene: { canvas: { addEventListener() {}, removeEventListener() {} } },
+      camera: { moveEnd: { addEventListener() {} } },
+    },
+    styleManager: {},
+    dataManager,
+  });
+  for (const alias of [
+    'weather',
+    'weather layer',
+    'current weather',
+    'conditions',
+  ]) {
+    const result = await runner('set_layer_visibility', {
+      layerId: alias,
+      enabled: true,
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.layerId, 'weather');
+    assert.deepEqual(calls.at(-1), ['weather', true]);
+  }
+});
+
 test('SDPD report voice aliases resolve to the sdpd-reports layer', async () => {
   globalThis.window = globalThis.window || {
     clearTimeout,

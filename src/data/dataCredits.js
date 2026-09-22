@@ -81,7 +81,9 @@ export const DATA_CREDITS = [
       '<a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA Planetary Fact Sheet</a>; ' +
       'planetary maps from ' +
       '<a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> ' +
-      '(CC BY 4.0). Orbiters, landers, rovers, and probes are curated last-known positions, not live telemetry.',
+      '(CC BY 4.0); moon maps from ' +
+      '<a href="https://github.com/nasa/NASA-3D-Resources" target="_blank" rel="noopener">NASA 3D Resources</a> ' +
+      '(U.S. public domain). Orbiters, landers, rovers, and probes are curated last-known positions, not live telemetry.',
   },
   {
     key: 'launch-library-2',
@@ -89,6 +91,18 @@ export const DATA_CREDITS = [
       'Space mission launch, payload &amp; recovery metadata: ' +
       '<a href="https://ll.thespacedevs.com/docs/" target="_blank" rel="noopener">Launch Library 2 — The Space Devs</a> ' +
       '(API documentation and rate limits)',
+  },
+  {
+    key: 'faa-tfr',
+    html:
+      'Space-operation TFRs and FDC NOTAMs: Federal Aviation Administration ' +
+      '(<a href="https://tfr.faa.gov/" target="_blank" rel="noopener">tfr.faa.gov</a>)',
+  },
+  {
+    key: 'uscg-bnm',
+    html:
+      'Launch hazard areas for mariners: U.S. Coast Guard Broadcast Notices to Mariners ' +
+      '(<a href="https://www.navcen.uscg.gov/broadcast-notice-to-mariners" target="_blank" rel="noopener">navcen.uscg.gov</a>)',
   },
   {
     key: 'usgs',
@@ -137,6 +151,12 @@ export const DATA_CREDITS = [
       'Cockpit place context and last-resort place search: ' +
       '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> ' +
       'via Nominatim (ODbL 1.0)',
+  },
+  {
+    key: 'rainviewer',
+    html:
+      'Live weather radar: ' +
+      '<a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>',
   },
   {
     key: 'open-meteo',

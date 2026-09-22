@@ -50,6 +50,7 @@ export function createSelection({
 
   function entityLaunchId(entity) {
     if (!entity?.id || typeof entity.id !== 'string') return null;
+    if (entity.id.startsWith('rocket-restriction:')) return null;
     const match = entity.id.match(/^rocket-[^:]+:([^:]+)/);
     return match?.[1] || null;
   }
@@ -74,11 +75,13 @@ export function createSelection({
       layerState._viewer.selectedEntity = undefined;
     }
     if (!layerState._dataSource) return;
+    parts.restrictions?.sync(launchId);
     for (const entity of layerState._dataSource.entities.values) {
       const relatedId = entityLaunchId(entity);
+      const restriction = String(entity.id).startsWith('rocket-restriction:');
       entity.show = launchId
-        ? relatedId === launchId
-        : entity.id.startsWith('rocket-launch:');
+        ? relatedId === launchId || restriction
+        : entity.id.startsWith('rocket-launch:') || restriction;
     }
     parts.orbitRendering.syncMissionOrbitPrimitiveVisibility();
     parts.overlays.syncMissionOverlayEntries();

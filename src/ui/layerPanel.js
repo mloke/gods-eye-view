@@ -44,6 +44,7 @@ const PANEL_GROUPS = [
     ids: [
       'rocket-launches',
       'earthquakes',
+      'weather',
       'local-firms',
       'sdpd-reports',
       'geofence-watch',
@@ -67,6 +68,7 @@ const PANEL_LABELS = {
   'alpr-cameras': 'Mapped ALPR Cameras',
   'local-datacenters': 'Data Centers',
   'local-firms': 'Active Fires',
+  weather: 'Weather',
   'sdpd-reports': 'SDPD Reports',
   'geofence-watch': 'Geofence Watch',
   'location-tags': 'Personal Tags',

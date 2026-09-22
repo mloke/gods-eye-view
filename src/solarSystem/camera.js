@@ -1,4 +1,10 @@
 import * as Cesium from 'cesium';
+import {
+  SOLAR_CAMERA_FAR_M,
+  SOLAR_CAMERA_MAX_ZOOM_M,
+  SOLAR_CAMERA_MIN_ZOOM_M,
+  SOLAR_CAMERA_NEAR_M,
+} from './scale.js';
 
 let controllerSnapshot = null;
 let lookAtTarget = null;
@@ -58,6 +64,9 @@ export function captureSolarCameraController(viewer) {
       ? Cesium.Cartesian3.clone(camera.constrainedAxis)
       : null;
   }
+  if (state && viewer?.scene && 'logarithmicDepthBuffer' in viewer.scene) {
+    state.logarithmicDepthBuffer = viewer.scene.logarithmicDepthBuffer;
+  }
   return state;
 }
 
@@ -75,8 +84,8 @@ export function applySolarCameraController(viewer) {
   controller.enableCollisionDetection = false;
   controller.enableTranslate = false;
   controller.enableLook = false;
-  controller.minimumZoomDistance = 2_000;
-  controller.maximumZoomDistance = 20_000_000_000;
+  controller.minimumZoomDistance = SOLAR_CAMERA_MIN_ZOOM_M;
+  controller.maximumZoomDistance = SOLAR_CAMERA_MAX_ZOOM_M;
   controller.minimumTrackBallHeight = 0;
   controller.minimumPickingTerrainHeight = Number.POSITIVE_INFINITY;
   controller.minimumCollisionTerrainHeight = Number.POSITIVE_INFINITY;
@@ -98,8 +107,11 @@ export function applySolarCameraController(viewer) {
   if (camera) camera.constrainedAxis = undefined;
   const frustum = camera?.frustum;
   if (frustum && Number.isFinite(frustum.near)) {
-    frustum.near = 10_000;
-    frustum.far = 50_000_000_000;
+    frustum.near = SOLAR_CAMERA_NEAR_M;
+    frustum.far = SOLAR_CAMERA_FAR_M;
+  }
+  if (viewer?.scene && 'logarithmicDepthBuffer' in viewer.scene) {
+    viewer.scene.logarithmicDepthBuffer = true;
   }
 }
 
@@ -120,6 +132,9 @@ export function restoreSolarCameraController(viewer, captured = controllerSnapsh
   if (frustum && captured && Number.isFinite(captured.frustumNear)) {
     frustum.near = captured.frustumNear;
     if (Number.isFinite(captured.frustumFar)) frustum.far = captured.frustumFar;
+  }
+  if (viewer?.scene && captured && 'logarithmicDepthBuffer' in captured) {
+    viewer.scene.logarithmicDepthBuffer = captured.logarithmicDepthBuffer;
   }
   controllerSnapshot = null;
   lookAtTarget = null;

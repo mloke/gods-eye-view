@@ -13,6 +13,7 @@ import { createSatelliteSource } from '../layers/satellites/source.js';
 import { createLaunchSource } from '../layers/launches/source.js';
 import { createOverpassAlprSource } from '../layers/alpr/source.js';
 import { createFirmsSource } from '../layers/firms/source.js';
+import { createWeatherSource } from '../layers/weather/source.js';
 import { createSdpdReportsSource } from '../layers/sdpd/source.js';
 import { createLocationTagsSource } from '../layers/locationTags/source.js';
 import { createGeofenceWatchSource } from '../layers/geofenceWatch/source.js';
@@ -38,6 +39,7 @@ export function createStandaloneLayerSources() {
     launches: createLaunchSource(),
     alpr: createOverpassAlprSource(),
     firms: createFirmsSource(),
+    weather: createWeatherSource(),
     sdpd: createSdpdReportsSource(),
     locationTags: createLocationTagsSource(),
     geofences: createGeofenceWatchSource(),

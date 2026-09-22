@@ -4,6 +4,7 @@ import { promises as fsp } from 'node:fs';
 import {
   celestrakProxy,
   rocketLaunchesProxy,
+  spaceOperationRestrictionsProxy,
   launchLibraryRequestHeaders,
   LL2_CACHE_TTL_MS,
 } from 'gods-eye-view/server/providers/space';
@@ -146,3 +147,56 @@ for (const preview of [false, true])
     assert.equal(hit.body, first.body);
     assert.equal(calls, 1);
   });
+
+test('space-operation proxy keeps rocket closures and drops unrelated hazards', async (t) => {
+  isolateDisk(t);
+  const clock = Date.parse('2026-09-22T12:00:00.000Z');
+  t.mock.method(Date, 'now', () => clock);
+  const seen = [];
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    const href = String(url);
+    seen.push(href);
+    if (href.endsWith('/exportTfrList')) {
+      return Response.json([
+        {
+          notam_id: '6/4325',
+          type: 'SPACE OPERATIONS',
+          description: 'BLACK ROCK, NV',
+          facility: 'ZLC',
+          state: 'NV',
+        },
+        { notam_id: '6/4585', type: 'HAZARDS', description: 'Brownsville' },
+      ]);
+    }
+    if (href.includes('getWebText')) {
+      return Response.json([
+        {
+          text: 'Reason for NOTAM : TO PROVIDE A SAFE ENVIRONMENT FOR ROCKET LAUNCH ACTIVITY Beginning Date and Time : September 27, 2026 at 1500 UTC Ending Date and Time : September 28, 2026 at 0100 UTC (Latitude: 40&#xBA;50&#39;42"N, Longitude: 119&#xBA;06&#39;44"W) Radius: 15 nautical miles',
+        },
+      ]);
+    }
+    return new Response(
+      '<rss><item><title>SAFETY/CAPE/SPACE OPERATIONS/BNM 9100-26</title><description>SPACE LAUNCH OPERATIONS A. FROM 28-36-31N/080-35-38W TO 28-39-00N/080-29-00W TO 28-31-00N/080-33-17W TO BEGINNING 22/1200 SEP 26 TO 22/1800 SEP 26.</description></item><item><title>SAFETY/VIRGINIA CAPES/HAZ OPS/GUNEX/BNM 0416-26</title><description>NAVY GUNFIRE A. FROM 36-00-00N/075-00-00W TO 36-10-00N/074-40-00W TO 35-50-00N/074-40-00W TO BEGINNING 22/1200 SEP 26 TO 22/1800 SEP 26.</description></item></rss>',
+      { headers: { 'Content-Type': 'application/rss+xml' } },
+    );
+  });
+  const request = install(spaceOperationRestrictionsProxy());
+  assert.equal(
+    (await request('/api/space-restrictions', '/', 'POST')).status,
+    405,
+  );
+  const first = await request('/api/space-restrictions');
+  assert.equal(first.status, 200);
+  assert.equal(first.headers['X-GEV-Cache'], 'MISS');
+  const snapshot = JSON.parse(first.body);
+  assert.deepEqual(
+    snapshot.notices.map((notice) => notice.id).sort(),
+    ['bnm:9100-26', 'tfr:6/4325'],
+  );
+  assert.equal(snapshot.notices.find((notice) => notice.id === 'tfr:6/4325').areas[0].radiusM, 15 * 1852);
+  assert.doesNotMatch(first.body, /GUNEX|Brownsville|6\/4585/);
+  assert.equal(seen.filter((href) => href.includes('getWebText')).length, 1);
+  const hit = await request('/api/space-restrictions');
+  assert.equal(hit.headers['X-GEV-Cache'], 'HIT');
+  assert.equal(hit.body, first.body);
+});

@@ -1,4 +1,5 @@
 import { getSolarBody, SOLAR_BODIES } from './bodies.js';
+import { liveHeliocentricAu } from './ephemeris.js';
 
 /**
  * Bundled NASA Planetary Fact Sheet values for the Solar System tab.
@@ -486,6 +487,9 @@ export function formatPlanetaryData(id) {
   if (year) rows.push({ label: body.kind === 'moon' ? 'Orbit' : 'Year', value: year });
   if (Number.isFinite(data.solarDistanceAu))
     rows.push({ label: 'Distance', value: `${trimNumber(data.solarDistanceAu, 3)} AU` });
+  const nowAu = liveHeliocentricAu(body.id);
+  if (Number.isFinite(nowAu) && nowAu > 0)
+    rows.push({ label: 'Now', value: `${trimNumber(nowAu, 3)} AU` });
   if (Number.isFinite(data.parentDistanceKm) && parent)
     rows.push({
       label: parent.name,

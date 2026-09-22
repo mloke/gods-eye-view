@@ -16,6 +16,7 @@ import { militaryInstallationsProxy } from 'gods-eye-view/server/providers/milit
 import {
   regionalBriefProxy,
   weatherEffectsProxy,
+  weatherGridProxy,
 } from 'gods-eye-view/server/providers/regional';
 import { openAiRealtimeProxy } from 'gods-eye-view/server/providers/openai';
 import { keySetupEndpoint } from 'gods-eye-view/server/standalone/key-setup';
@@ -98,6 +99,7 @@ test('standalone service guards run in development and preview without upstream 
       [militaryInstallationsProxy, '/api/military-installations'],
       [regionalBriefProxy, '/api/regional-brief'],
       [weatherEffectsProxy, '/api/weather-effects'],
+      [weatherGridProxy, '/api/weather-grid'],
     ]) {
       const routes = install(factory(), preview);
       assert.equal(
@@ -114,6 +116,34 @@ test('standalone service guards run in development and preview without upstream 
       );
     }
   }
+});
+
+test('weather-grid requests share upstream work and retain a complete snapshot', async (t) => {
+  let calls = 0;
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    calls++;
+    assert.equal(new URL(url).hostname, 'api.open-meteo.com');
+    return Response.json({
+      latitude: [32.7, 32.7],
+      longitude: [-117.2, -117.1],
+      current: {
+        time: ['2026-09-22T18:00', '2026-09-22T18:00'],
+        temperature_2m: [19, 21],
+        weather_code: [0, 1],
+        wind_speed_10m: [8, 10],
+      },
+    });
+  });
+  const handler = install(weatherGridProxy()).get('/api/weather-grid');
+  const query = {
+    url: '/?west=-117.2&south=32.65&east=-117.1&north=32.75&alt=8000',
+  };
+  const first = await request(handler, query);
+  assert.equal(first.status, 200);
+  assert.equal(first.headers['x-weather-grid'], 'MISS');
+  assert.ok(JSON.parse(first.body).samples.length >= 1);
+  assert.equal((await request(handler, query)).headers['x-weather-grid'], 'HIT');
+  assert.ok(calls >= 1);
 });
 
 test('weather-only requests share upstream work and retain fresh and stale responses', async (t) => {

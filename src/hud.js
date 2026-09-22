@@ -630,25 +630,32 @@ export class IntelHUD {
    * altitude, view window dimensions, sun elevation, ONA, and local timezone.
    * @returns {string} Formatted summary line for the HUD summary readout.
    */
-  _solarSystemReadoutLabel() {
+  _solarSystemReadout() {
+    const layer = this._dataManager?.layers?.get('solar-system')?.module;
+    if (typeof layer?.getHudReadout === 'function') return layer.getHudReadout();
     const bodyId = getFocusedSolarBodyId();
-    return bodyId
-      ? `SOLAR SYSTEM / ${bodyId.toUpperCase()}`
-      : 'SOLAR SYSTEM';
+    return {
+      label: bodyId ? `SOLAR SYSTEM / ${bodyId.toUpperCase()}` : 'SOLAR SYSTEM',
+      alt: 'AU: ---',
+    };
+  }
+
+  _solarSystemReadoutLabel() {
+    return this._solarSystemReadout().label;
   }
 
   _paintSolarSystemReadout() {
-    const label = this._solarSystemReadoutLabel();
+    const readout = this._solarSystemReadout();
     const mgrs = document.getElementById('hud-mgrs');
     if (mgrs) mgrs.textContent = 'MGRS: ---';
     const llEl = document.getElementById('hud-latlon');
-    if (llEl) llEl.textContent = label;
+    if (llEl) llEl.textContent = readout.label;
     const bottomEl = document.getElementById('hud-bottom-line');
-    if (bottomEl) bottomEl.textContent = label;
+    if (bottomEl) bottomEl.textContent = readout.label;
     const altEl = document.getElementById('hud-alt');
-    if (altEl) altEl.textContent = 'ALT: ---';
+    if (altEl) altEl.textContent = readout.alt;
     this._latestMetrics = null;
-    this._setSummaryText(label, false);
+    this._setSummaryText(readout.label, false);
   }
 
   _composeSummary() {

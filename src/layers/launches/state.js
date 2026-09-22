@@ -51,6 +51,8 @@ export function createState({ services }) {
 
   state._launches = [];
 
+  state._spaceRestrictions = [];
+
   state._missionPanel = null;
 
   state._missionRoster = null;

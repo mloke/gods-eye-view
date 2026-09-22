@@ -259,6 +259,7 @@ export function createPanel({ state: layerState, services, parts, source }) {
       '[data-mission-stages-section]',
     );
     if (stageSection) stageSection.hidden = stageRows.length === 0;
+    renderMissionRestrictions(launch);
     updateMissionTelemetry(true);
     layerState._missionPanel.querySelector('[data-mission-index]').textContent =
       `${index + 1} / ${layerState._launches.length}`;
@@ -282,6 +283,7 @@ export function createPanel({ state: layerState, services, parts, source }) {
       '[data-mission-roster-count]',
     );
     if (count) count.textContent = `${layerState._launches.length} / 30D`;
+    renderRestrictionSummary();
     if (!list) return;
     const focusSnapshot = captureMissionRosterFocus(list);
     layerState._missionRosterPreviewOwnership?.reset();
@@ -327,6 +329,71 @@ export function createPanel({ state: layerState, services, parts, source }) {
         '[data-mission-roster-focus-continuation]',
       ),
     );
+  }
+
+  function renderRestrictionSummary() {
+    const summary = layerState._missionRoster?.querySelector(
+      '[data-mission-restriction-summary]',
+    );
+    if (!summary) return;
+    const notices = layerState._spaceRestrictions || [];
+    const air = notices.filter((notice) => notice.kind === 'tfr').length;
+    const ship = notices.filter((notice) => notice.kind === 'ship').length;
+    if (!air && !ship) {
+      summary.hidden = true;
+      summary.textContent = '';
+      return;
+    }
+    const parts = [];
+    if (air) parts.push(`${air} TFR / NOTAM`);
+    if (ship) parts.push(`${ship} SHIP ZONE${ship === 1 ? '' : 'S'}`);
+    summary.hidden = false;
+    summary.textContent = `SPACE CLOSURES · ${parts.join(' · ')}`;
+  }
+
+  function renderMissionRestrictions(launch) {
+    const section = layerState._missionPanel?.querySelector(
+      '[data-mission-restrictions-section]',
+    );
+    const host = layerState._missionPanel?.querySelector(
+      '[data-mission-restrictions]',
+    );
+    if (!section || !host) return;
+    const notices = layerState._spaceRestrictions || [];
+    const matches = parts.restrictions?.noticesForLaunch(launch) || [];
+    if (!notices.length) {
+      section.hidden = true;
+      host.innerHTML = '';
+      return;
+    }
+    section.hidden = false;
+    if (!matches.length) {
+      host.innerHTML =
+        '<p class="mission-restriction-empty">NO SPACE-OPERATION CLOSURE OVERLAPS THIS LAUNCH</p>';
+      return;
+    }
+    host.innerHTML = matches
+      .map((notice) => {
+        const label = notice.kind === 'ship' ? 'SHIP RESTRICTION' : 'TFR / NOTAM';
+        const when = formatRestrictionWindow(notice);
+        const href = /^https?:\/\//i.test(notice.url || '')
+          ? escapeMissionText(notice.url)
+          : '';
+        return `<p><b>${label}</b> ${escapeMissionText(notice.notamId || notice.title)}<small>${escapeMissionText(notice.summary || notice.title)}${when ? ` · ${escapeMissionText(when)}` : ''}</small>${href ? ` <a href="${href}" target="_blank" rel="noopener">SOURCE</a>` : ''}</p>`;
+      })
+      .join('');
+  }
+
+  function formatRestrictionWindow(notice) {
+    const windows = Array.isArray(notice.windows) ? notice.windows : [];
+    const first = windows[0] || notice;
+    if (!first?.startsAt) return '';
+    const start = String(first.startsAt).replace('T', ' ').replace('.000Z', 'Z');
+    const end = first.endsAt
+      ? String(first.endsAt).replace('T', ' ').replace('.000Z', 'Z')
+      : '';
+    const extra = windows.length > 1 ? ` +${windows.length - 1} WINDOWS` : '';
+    return end ? `${start} – ${end}${extra}` : `${start}${extra}`;
   }
 
   function escapeMissionText(value) {
@@ -452,7 +519,7 @@ export function createPanel({ state: layerState, services, parts, source }) {
       'aria-label',
       'Selected Space Mission',
     );
-    layerState._missionPanel.innerHTML = `<div class="space-mission-view-header"><span>SELECTED SPACE MISSION</span><button type="button" data-mission-close title="Show all missions" aria-label="Deselect mission">×</button></div><div class="space-mission-detail"><strong data-mission-title>MISSION</strong><span data-mission-field data-mission-provider></span><span data-mission-field>STATUS · <b data-mission-status></b></span><span data-mission-field>LAUNCH SITE · <b data-mission-site></b></span><span data-mission-field>LAUNCH TIME · <b data-mission-time></b></span><span data-mission-field>ORBIT · <b data-mission-orbit></b></span><span>ASCENT PATH · <b data-mission-ascent-source></b></span><span data-mission-field>CURRENT DISTANCE FROM EARTH · <b data-mission-distance></b></span><span data-mission-field>SATELLITE SPEED · <b data-mission-speed></b></span></div><section class="mission-data-section"><h4>PAYLOAD</h4><div class="mission-table-scroll"><table class="mission-data-table"><thead><tr><th>NAME</th><th>TYPE</th><th>DESTINATION</th></tr></thead><tbody data-mission-payloads></tbody></table></div></section><section class="mission-data-section" data-mission-stages-section><h4>STAGE / RE-ENTRY / RECOVERY</h4><div class="mission-table-scroll"><table class="mission-data-table"><thead><tr><th>STAGE</th><th>STATUS</th><th>FINAL POSITION</th></tr></thead><tbody data-mission-stages></tbody></table></div></section><div class="mission-replay-speed-control"><div class="mission-replay-speed-header"><label for="space-mission-replay-speed">REPLAY SPEED</label><output class="gev-slider-value" for="space-mission-replay-speed" data-mission-replay-speed-output>1×</output></div><input id="space-mission-replay-speed" class="gev-quantitative-slider" type="range" min="0.25" max="4" step="0.25" value="1" data-mission-replay-speed aria-label="Replay speed multiplier"><div class="mission-replay-speed-scale" aria-hidden="true"><span>0.25×</span><span>1×</span><span>4×</span></div></div><div class="mission-action-row"><button type="button" class="mission-focus-button" data-mission-focus>FOCUS</button><button type="button" class="mission-replay-button" data-mission-replay aria-pressed="false">REPLAY ASCENT</button></div><div class="space-mission-nav"><button type="button" class="mission-nav-button" data-mission-prev title="Previous mission"><span aria-hidden="true">‹</span> PREV</button><span class="mission-nav-index" data-mission-index>—</span><button type="button" class="mission-nav-button" data-mission-next title="Next mission">NEXT <span aria-hidden="true">›</span></button></div><button type="button" class="panel-layer-toggle" data-mission-show-all>SHOW ALL / DESELECT</button>`;
+    layerState._missionPanel.innerHTML = `<div class="space-mission-view-header"><span>SELECTED SPACE MISSION</span><button type="button" data-mission-close title="Show all missions" aria-label="Deselect mission">×</button></div><div class="space-mission-detail"><strong data-mission-title>MISSION</strong><span data-mission-field data-mission-provider></span><span data-mission-field>STATUS · <b data-mission-status></b></span><span data-mission-field>LAUNCH SITE · <b data-mission-site></b></span><span data-mission-field>LAUNCH TIME · <b data-mission-time></b></span><span data-mission-field>ORBIT · <b data-mission-orbit></b></span><span>ASCENT PATH · <b data-mission-ascent-source></b></span><span data-mission-field>CURRENT DISTANCE FROM EARTH · <b data-mission-distance></b></span><span data-mission-field>SATELLITE SPEED · <b data-mission-speed></b></span></div><section class="mission-data-section" data-mission-restrictions-section hidden><h4>AIR / SEA CLOSURES</h4><div class="mission-restriction-list" data-mission-restrictions></div></section><section class="mission-data-section"><h4>PAYLOAD</h4><div class="mission-table-scroll"><table class="mission-data-table"><thead><tr><th>NAME</th><th>TYPE</th><th>DESTINATION</th></tr></thead><tbody data-mission-payloads></tbody></table></div></section><section class="mission-data-section" data-mission-stages-section><h4>STAGE / RE-ENTRY / RECOVERY</h4><div class="mission-table-scroll"><table class="mission-data-table"><thead><tr><th>STAGE</th><th>STATUS</th><th>FINAL POSITION</th></tr></thead><tbody data-mission-stages></tbody></table></div></section><div class="mission-replay-speed-control"><div class="mission-replay-speed-header"><label for="space-mission-replay-speed">REPLAY SPEED</label><output class="gev-slider-value" for="space-mission-replay-speed" data-mission-replay-speed-output>1×</output></div><input id="space-mission-replay-speed" class="gev-quantitative-slider" type="range" min="0.25" max="4" step="0.25" value="1" data-mission-replay-speed aria-label="Replay speed multiplier"><div class="mission-replay-speed-scale" aria-hidden="true"><span>0.25×</span><span>1×</span><span>4×</span></div></div><div class="mission-action-row"><button type="button" class="mission-focus-button" data-mission-focus>FOCUS</button><button type="button" class="mission-replay-button" data-mission-replay aria-pressed="false">REPLAY ASCENT</button></div><div class="space-mission-nav"><button type="button" class="mission-nav-button" data-mission-prev title="Previous mission"><span aria-hidden="true">‹</span> PREV</button><span class="mission-nav-index" data-mission-index>—</span><button type="button" class="mission-nav-button" data-mission-next title="Next mission">NEXT <span aria-hidden="true">›</span></button></div><button type="button" class="panel-layer-toggle" data-mission-show-all>SHOW ALL / DESELECT</button>`;
     layerState._missionPanel
       .querySelector('.mission-action-row')
       .insertAdjacentHTML(

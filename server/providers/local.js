@@ -3,6 +3,7 @@ import {
   celestrakProxy,
   planetaryTextureProxy,
   rocketLaunchesProxy,
+  spaceOperationRestrictionsProxy,
 } from './space.js';
 import { tomtomProxy } from './traffic.js';
 import { firmsProxy } from './firms.js';
@@ -16,6 +17,8 @@ import { militaryInstallationsProxy } from './military-installations.js';
 import { regionalBriefProxy } from './regional/briefing.js';
 import { geocodeProxy } from './regional/place.js';
 import { weatherEffectsProxy } from './regional/weather-effects.js';
+import { weatherGridProxy } from './regional/weather-grid.js';
+import { weatherRadarProxy } from './regional/weather-radar.js';
 import { cctvProxy } from './cctv.js';
 import { defaultSourceRoot } from './common/source-root.js';
 import { radioBrowserProxy } from './radio.js';
@@ -40,6 +43,7 @@ function localProviderPlugins() {
     locationTagsProxy(),
     geofencesProxy(),
     rocketLaunchesProxy(),
+    spaceOperationRestrictionsProxy(),
     terrainHeightsProxy(),
     adsbdbProxy(),
     overpassProxy(),
@@ -47,6 +51,8 @@ function localProviderPlugins() {
     regionalBriefProxy(),
     geocodeProxy(),
     weatherEffectsProxy(),
+    weatherGridProxy(),
+    weatherRadarProxy(),
     cctvProxy({ sourceRoot: defaultSourceRoot }),
     radioBrowserProxy(),
     gbfsProxy(),

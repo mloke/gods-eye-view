@@ -339,6 +339,14 @@
   font-size: 9px;
   letter-spacing: 0.08em;
 }
+#space-mission-panel-host .space-mission-restriction-summary {
+  margin: 7px 3px 0;
+  color: #ffb020;
+  font:
+    8px 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.08em;
+}
 #space-mission-panel-host .space-mission-roster-list {
   display: grid;
   max-height: min(43vh, 420px);
@@ -579,32 +587,96 @@
   font: 7px/1.4 'JetBrains Mono', monospace;
   letter-spacing: 0.06em;
 }
+#solar-system-panel-host .solar-system-asset-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 8px;
+}
+#solar-system-panel-host .solar-system-asset-filter {
+  padding: 4px 7px;
+  border: 1px solid rgba(98, 181, 255, 0.22);
+  border-radius: 4px;
+  color: rgba(190, 230, 230, 0.7);
+  background: rgba(20, 46, 72, 0.28);
+  font: 7px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+#solar-system-panel-host .solar-system-asset-filter.active,
+#solar-system-panel-host .solar-system-asset-filter:hover,
+#solar-system-panel-host .solar-system-asset-filter:focus-visible {
+  border-color: rgba(0, 212, 255, 0.55);
+  color: #eaffff;
+  background: rgba(0, 212, 255, 0.12);
+}
+#solar-system-panel-host .solar-system-asset-inspect {
+  margin: 0 0 8px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 224, 138, 0.35);
+  border-radius: 6px;
+  background: rgba(80, 64, 16, 0.22);
+}
+#solar-system-panel-host .solar-system-asset-kind {
+  margin: 8px 0 4px;
+  color: rgba(190, 230, 230, 0.5);
+  font: 7px/1.3 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+}
 #solar-system-panel-host .solar-system-asset-list {
   margin: 0;
   padding: 0;
   max-height: 42vh;
   overflow: auto;
-  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-#solar-system-panel-host .solar-system-asset-list li {
-  margin: 0 0 6px;
+#solar-system-panel-host .solar-system-asset-item {
+  width: 100%;
+  margin: 0;
   padding: 6px 8px;
   border: 1px solid rgba(98, 181, 255, 0.12);
   border-radius: 6px;
+  color: inherit;
+  background: rgba(20, 46, 72, 0.28);
+  text-align: left;
+  cursor: pointer;
 }
-#solar-system-panel-host .solar-system-asset-list strong,
-#solar-system-panel-host .solar-system-asset-list small,
-#solar-system-panel-host .solar-system-asset-list span {
+#solar-system-panel-host .solar-system-asset-item.active,
+#solar-system-panel-host .solar-system-asset-item:hover,
+#solar-system-panel-host .solar-system-asset-item:focus-visible {
+  border-color: rgba(255, 224, 138, 0.55);
+  background: rgba(255, 224, 138, 0.08);
+}
+#solar-system-panel-host .solar-system-asset-item.ended {
+  opacity: 0.72;
+}
+#solar-system-panel-host .solar-system-asset-item strong,
+#solar-system-panel-host .solar-system-asset-item small,
+#solar-system-panel-host .solar-system-asset-item span,
+#solar-system-panel-host .solar-system-asset-inspect strong,
+#solar-system-panel-host .solar-system-asset-inspect small,
+#solar-system-panel-host .solar-system-asset-inspect span {
   display: block;
 }
-#solar-system-panel-host .solar-system-asset-list strong {
+#solar-system-panel-host .solar-system-asset-item strong,
+#solar-system-panel-host .solar-system-asset-inspect strong {
   font: 8px/1.3 'JetBrains Mono', monospace;
   color: #eaffff;
 }
-#solar-system-panel-host .solar-system-asset-list small,
-#solar-system-panel-host .solar-system-asset-list span {
+#solar-system-panel-host .solar-system-asset-item small,
+#solar-system-panel-host .solar-system-asset-item span,
+#solar-system-panel-host .solar-system-asset-inspect small,
+#solar-system-panel-host .solar-system-asset-inspect span {
   color: rgba(190, 230, 230, 0.55);
   font: 7px/1.4 'JetBrains Mono', monospace;
+}
+#solar-system-panel-host .solar-system-asset-empty {
+  margin: 0 0 8px;
+  color: rgba(190, 230, 230, 0.45);
+  font: 7px/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
 }
 #space-mission-panel .space-mission-view-header {
   display: flex;
@@ -663,6 +735,27 @@
     10px 'JetBrains Mono',
     monospace;
   letter-spacing: 0.17em;
+}
+#space-mission-panel .mission-restriction-list p {
+  margin: 0 0 8px;
+  color: #d8ffff;
+  font:
+    9px 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.04em;
+}
+#space-mission-panel .mission-restriction-list b {
+  color: #ffb020;
+  font-weight: 400;
+}
+#space-mission-panel .mission-restriction-list small,
+#space-mission-panel .mission-restriction-empty {
+  display: block;
+  margin-top: 3px;
+  color: rgba(190, 230, 230, 0.62);
+}
+#space-mission-panel .mission-restriction-list a {
+  color: #22e6e6;
 }
 #space-mission-panel .mission-table-scroll {
   overflow-x: auto;

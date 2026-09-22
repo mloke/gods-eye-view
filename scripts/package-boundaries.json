@@ -267,8 +267,10 @@
       "server/providers/regional/place.js",
       "server/providers/regional/query.js",
       "server/providers/regional/weather-effects.js",
+      "server/providers/regional/weather-grid.js",
       "server/providers/regional/weather.js",
       "src/data/regionalModel.js",
+      "src/layers/weather/records.js",
       "src/nominatimGeocode.js",
       "src/sources/httpBody.js",
       "src/sources/rateLimit.js"
@@ -870,6 +872,18 @@
     ],
     "external": ["cesium"]
   },
+  "weather": {
+    "exports": ["./layers/weather"],
+    "modules": [
+      "src/layers/weather/index.js",
+      "src/layers/weather/model.js",
+      "src/layers/weather/source.js",
+      "src/layers/weather/records.js",
+      "src/data/inputOwnership.js",
+      "src/data/regionalModel.js"
+    ],
+    "external": ["cesium"]
+  },
   "location-tags": {
     "exports": ["./layers/location-tags"],
     "modules": [
@@ -1294,6 +1308,7 @@
       "src/app/layers/bikeshare.js",
       "src/app/layers/cctv.js",
       "src/app/layers/earthquakes.js",
+      "src/app/layers/weather.js",
       "src/app/layers/sdpdReports.js",
       "src/app/layers/locationTags.js",
       "src/app/layers/geofenceWatch.js",
@@ -1360,6 +1375,7 @@
       "src/data/detectionPresentation.js",
       "src/data/detectionRenderDemand.js",
       "src/data/earthquakes.js",
+      "src/data/weather.js",
       "src/data/sdpdReports.js",
       "src/data/geofenceWatch.js",
       "src/data/fireAnchors.js",
@@ -1498,6 +1514,9 @@
       "src/layers/earthquakes/index.js",
       "src/layers/earthquakes/model.js",
       "src/layers/earthquakes/source.js",
+      "src/layers/weather/index.js",
+      "src/layers/weather/model.js",
+      "src/layers/weather/source.js",
       "src/layers/sdpd/index.js",
       "src/layers/sdpd/model.js",
       "src/layers/sdpd/source.js",
@@ -1831,6 +1850,7 @@
       "src/data/feedState.js",
       "src/layers/alpr/records.js",
       "src/layers/earthquakes/records.js",
+      "src/layers/weather/records.js",
       "src/layers/sdpd/records.js",
       "src/layers/locationTags/records.js",
       "src/layers/geofenceWatch/records.js",
@@ -1948,6 +1968,7 @@
       "src/app/layers/bikeshare.js",
       "src/app/layers/cctv.js",
       "src/app/layers/earthquakes.js",
+      "src/app/layers/weather.js",
       "src/app/layers/sdpdReports.js",
       "src/app/layers/locationTags.js",
       "src/app/layers/geofenceWatch.js",
@@ -2092,6 +2113,9 @@
       "src/layers/earthquakes/index.js",
       "src/layers/earthquakes/model.js",
       "src/layers/earthquakes/source.js",
+      "src/layers/weather/index.js",
+      "src/layers/weather/model.js",
+      "src/layers/weather/source.js",
       "src/layers/sdpd/index.js",
       "src/layers/sdpd/model.js",
       "src/layers/sdpd/source.js",
@@ -2295,6 +2319,7 @@
       "src/app/localGeojsonServices.js",
       "src/layers/alpr/records.js",
       "src/layers/earthquakes/records.js",
+      "src/layers/weather/records.js",
       "src/layers/sdpd/records.js",
       "src/layers/locationTags/records.js",
       "src/layers/geofenceWatch/records.js",
@@ -2589,6 +2614,11 @@
   "sdpd-reports-source": {
     "exports": ["./layers/sdpd/source"],
     "modules": ["src/layers/sdpd/records.js", "src/layers/sdpd/source.js"],
+    "external": []
+  },
+  "weather-source": {
+    "exports": ["./layers/weather/source"],
+    "modules": ["src/layers/weather/records.js", "src/layers/weather/source.js"],
     "external": []
   },
   "location-tags-source": {

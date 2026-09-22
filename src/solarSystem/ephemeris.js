@@ -52,7 +52,7 @@ export function solveKepler(meanAnomalyRad, eccentricity) {
 }
 
 /**
- * Heliocentric ecliptic meters in the compressed scene frame.
+ * Heliocentric ecliptic meters at true AU scale.
  * @param {string} bodyId
  * @param {number} epochMs
  * @returns {{x: number, y: number, z: number, au: number, longitudeDeg: number}|null}
@@ -98,20 +98,20 @@ export function heliocentricPosition(bodyId, epochMs) {
 }
 
 /**
- * Local moon offset in compressed meters relative to its parent.
+ * Local moon offset in meters relative to its parent (true orbit scale).
  * @param {string} moonId
  * @param {number} epochMs
- * @param {number} parentVisualRadiusM
+ * @param {number} parentRadiusM
  * @returns {{x: number, y: number, z: number}|null}
  */
-export function moonOffset(moonId, epochMs, parentVisualRadiusM) {
+export function moonOffset(moonId, epochMs, parentRadiusM) {
   const elements = MOON_ELEMENTS[String(moonId || '').toLowerCase()];
   if (!elements) return null;
   const days = (julianDateFromMs(epochMs) - J2000_JD);
   const period = elements.periodDays || 1;
   const mean = wrapDeg(elements.meanLongitudeDeg + (360 * days) / period) * DEG;
   const inclination = elements.inclinationDeg * DEG;
-  const radius = visualMoonOrbitMeters(elements.aKm, parentVisualRadiusM);
+  const radius = visualMoonOrbitMeters(elements.aKm, parentRadiusM);
   return {
     x: radius * Math.cos(mean),
     y: radius * Math.sin(mean) * Math.cos(inclination),
@@ -133,7 +133,7 @@ export function bodyWorldPosition(bodyId, epochMs) {
     const parent = getSolarBody(body.parentId);
     const parentPos = bodyWorldPosition(body.parentId, epochMs);
     if (!parent || !parentPos) return null;
-    const offset = moonOffset(body.id, epochMs, parent.visualRadiusM);
+    const offset = moonOffset(body.id, epochMs, parent.radiusM);
     if (!offset) return parentPos;
     return {
       x: parentPos.x + offset.x,
@@ -145,7 +145,22 @@ export function bodyWorldPosition(bodyId, epochMs) {
 }
 
 /**
- * Sample a closed heliocentric orbit in the compressed frame.
+ * True heliocentric AU for a planet, or its parent if the body is a moon.
+ * @param {string} bodyId
+ * @param {number} [epochMs]
+ * @returns {number|null}
+ */
+export function liveHeliocentricAu(bodyId, epochMs = Date.now()) {
+  const body = getSolarBody(bodyId);
+  if (!body) return null;
+  if (body.id === 'sun') return 0;
+  const planetId = body.kind === 'moon' ? body.parentId : body.id;
+  const pos = heliocentricPosition(planetId, epochMs);
+  return Number.isFinite(pos?.au) ? pos.au : null;
+}
+
+/**
+ * Sample a closed heliocentric orbit at true AU scale.
  * @param {string} bodyId
  * @param {number} epochMs
  * @param {number} [samples=72]

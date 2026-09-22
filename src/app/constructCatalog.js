@@ -22,6 +22,7 @@ import { createApplicationLocationTags } from './layers/locationTags.js';
 import { createApplicationGeofenceWatch } from './layers/geofenceWatch.js';
 import { createApplicationCables } from './layers/submarineCables.js';
 import { createApplicationSolarSystem } from './layers/solarSystem.js';
+import { createApplicationWeather } from './layers/weather.js';
 import { createApplicationHomeCommand } from './layers/homeCommand.js';
 import { createInfrastructureLayers } from '../data/infrastructure.js';
 import { localGeoJsonServices } from './localGeojsonServices.js';
@@ -48,6 +49,7 @@ const SOURCE_METHODS = Object.freeze({
   alpr: ['fetch'],
   firms: ['getSnapshot'],
   earthquakes: ['getSnapshot'],
+  weather: ['getSnapshot'],
   sdpd: ['getSnapshot'],
   locationTags: ['getSnapshot'],
   geofences: ['getSnapshot'],
@@ -119,6 +121,7 @@ export function createApplicationCatalog({
         flights,
         military,
         createApplicationEarthquakes({ source: sources.earthquakes }),
+        createApplicationWeather({ source: sources.weather }),
         createApplicationSdpdReports({ source: sources.sdpd }),
         createApplicationLocationTags({ source: sources.locationTags }),
         createApplicationGeofenceWatch({

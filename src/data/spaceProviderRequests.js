@@ -15,3 +15,29 @@ export function launchLibraryRecentUrl(end) {
   url.searchParams.set('mode', 'detailed');
   return url;
 }
+
+/** Public FAA temporary-flight-restriction list. Callers filter Space Operations. */
+export function tfrListUrl() {
+  return new URL('https://tfr.faa.gov/tfrapi/exportTfrList');
+}
+
+/** Published web text for one FDC NOTAM id such as `6/4325`. */
+export function tfrWebTextUrl(notamId) {
+  const url = new URL('https://tfr.faa.gov/tfrapi/getWebText');
+  url.searchParams.set('notamId', notamId);
+  return url;
+}
+
+/**
+ * Launch-coast Broadcast Notice to Mariners feeds.
+ * Northeast, East (Wallops), Southeast (Cape), Heartland (Gulf), Southwest (Vandenberg).
+ */
+export function uscgLaunchCoastBnmFeeds() {
+  return [
+    'https://public.govdelivery.com/topics/USDHSCG_376/feed.rss',
+    'https://public.govdelivery.com/topics/USDHSCG_250/feed.rss',
+    'https://public.govdelivery.com/topics/USDHSCG_422/feed.rss',
+    'https://public.govdelivery.com/topics/USDHSCG_414/feed.rss',
+    'https://public.govdelivery.com/topics/USDHSCG_435/feed.rss',
+  ].map((href) => new URL(href));
+}

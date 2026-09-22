@@ -1,4 +1,5 @@
 import { getSolarBody, SOLAR_BODIES } from '../solarSystem/bodies.js';
+import { bodyWorldPosition } from '../solarSystem/ephemeris.js';
 import { visualMetersFromAu } from '../solarSystem/scale.js';
 
 const SURFACE_KINDS = new Set(['rover', 'lander']);
@@ -283,6 +284,66 @@ export function heliocentricAssets() {
   return assetsForBody('sun');
 }
 
+/** One catalog row, or null. */
+export function getPlanetaryAsset(id) {
+  const key = String(id || '').trim().toLowerCase();
+  return PLANETARY_ASSETS.find((row) => row.id === key) || null;
+}
+
+/**
+ * Coarse mission status inferred from the public note.
+ * @returns {'active'|'ended'|'cruise'}
+ */
+export function assetStatus(asset) {
+  const note = String(asset?.note || '').toLowerCase();
+  if (
+    /\b(?:ended|last contact|deorbit(?:ed)?|impact|retired|crash|lost during|final flight|found in)\b/.test(
+      note,
+    )
+  )
+    return 'ended';
+  if (/\b(?:cruise|inbound|planned)\b/.test(note)) return 'cruise';
+  return 'active';
+}
+
+/** World-space stand-in for any catalog asset. */
+export function assetWorldPosition(asset, epochMs, hostOrigin = null) {
+  if (!asset) return null;
+  if (asset.heliocentricAu) return heliocentricProbePosition(asset);
+  const host = getSolarBody(asset.bodyId);
+  const hostPos = hostOrigin || bodyWorldPosition(asset.bodyId, epochMs);
+  if (!host || !hostPos) return null;
+  const local = isSurfaceAsset(asset)
+    ? roverLocalPosition(asset, host.radiusM)
+    : orbiterLocalPosition(asset, host.radiusM, epochMs);
+  if (!local) return null;
+  return {
+    x: hostPos.x + local.x,
+    y: hostPos.y + local.y,
+    z: hostPos.z + local.z,
+  };
+}
+
+/** Filter the catalog by coarse mission status or kind. */
+export function filterPlanetaryAssets(assets, filter = 'all') {
+  return (assets || []).filter((asset) => {
+    if (filter === 'active') return assetStatus(asset) !== 'ended';
+    if (filter === 'ended') return assetStatus(asset) === 'ended';
+    if (filter === 'orbiter') return asset.kind === 'orbiter';
+    if (filter === 'surface') return isSurfaceAsset(asset);
+    return true;
+  });
+}
+
+/** Group catalog rows by kind, preserving input order. */
+export function groupPlanetaryAssets(assets) {
+  const groups = { orbiter: [], rover: [], lander: [], probe: [] };
+  for (const asset of assets || []) {
+    (groups[asset.kind] || groups.probe).push(asset);
+  }
+  return groups;
+}
+
 /** Every asset whose `bodyId` exists in the body catalog. */
 export function validatePlanetaryAssets(bodies = SOLAR_BODIES) {
   const ids = new Set(bodies.map((row) => row.id));
@@ -291,12 +352,12 @@ export function validatePlanetaryAssets(bodies = SOLAR_BODIES) {
   );
 }
 
-/** Surface point on the visual ellipsoid, body-centered meters. */
-export function roverLocalPosition(asset, visualRadiusM) {
+/** Surface point on the true-size ellipsoid, body-centered meters. */
+export function roverLocalPosition(asset, radiusM) {
   if (!isSurfaceAsset(asset)) return null;
   const lat = (Number(asset.lat) * Math.PI) / 180;
   const lon = (Number(asset.lon) * Math.PI) / 180;
-  const r = Number(visualRadiusM);
+  const r = Number(radiusM) * 1.004;
   if (!(r > 0) || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   return {
     x: r * Math.cos(lat) * Math.cos(lon),
@@ -305,10 +366,24 @@ export function roverLocalPosition(asset, visualRadiusM) {
   };
 }
 
-/** Orbiter / encounter offset in the parent visual frame. */
-export function orbiterLocalPosition(asset, visualRadiusM, epochMs) {
+/** Closed local orbit samples for a body-centered satellite ring. */
+export function orbiterOrbitLocalPositions(asset, radiusM, samples = 72) {
+  if (!orbiterLocalPosition(asset, radiusM, 0)) return [];
+  const count = Math.max(16, Number(samples) || 72);
+  const periodMs = Math.max(60_000, (asset.periodMin || 90) * 60_000);
+  const points = [];
+  for (let i = 0; i <= count; i += 1) {
+    const local = orbiterLocalPosition(asset, radiusM, (i / count) * periodMs);
+    if (local) points.push(local);
+  }
+  return points;
+}
+
+/** Orbiter / encounter offset using scene-frame altitude above the body. */
+export function orbiterLocalPosition(asset, radiusM, epochMs) {
   if (!asset || !ORBIT_KINDS.has(asset.kind) || asset.heliocentricAu) return null;
-  const radius = visualRadiusM * (1.28 + Math.min(2.4, (asset.altitudeKm || 0) / 8000));
+  const altitudeM = Math.max(0, Number(asset.altitudeKm) || 0) * 1000;
+  const radius = Number(radiusM) + altitudeM;
   const periodMs = Math.max(60_000, (asset.periodMin || 90) * 60_000);
   const phase = ((epochMs / periodMs) % 1) * Math.PI * 2;
   const inclination = ((asset.inclinationDeg || 0) * Math.PI) / 180;
@@ -325,18 +400,12 @@ export function heliocentricProbePosition(asset) {
   const lon = (Number(asset?.longitudeDeg) * Math.PI) / 180;
   const lat = (Number(asset?.latitudeDeg) * Math.PI) / 180;
   if (!(au > 0) || !Number.isFinite(lon) || !Number.isFinite(lat)) return null;
-  const r = visualMetersFromAu(visualHeliocentricAu(au));
+  const r = visualMetersFromAu(au);
   return {
     x: r * Math.cos(lat) * Math.cos(lon),
     y: r * Math.cos(lat) * Math.sin(lon),
     z: r * Math.sin(lat),
   };
-}
-
-/** Keep interstellar craft inside the default system overview frame. */
-function visualHeliocentricAu(au) {
-  if (au <= 30) return au;
-  return 32 + Math.min(8, Math.log10(au / 30) * 6);
 }
 
 /** Guard used by tests: every asset points at a known body. */

@@ -48,9 +48,11 @@ test('new data proxies install the same routes in dev and preview servers', () =
   const byName = new Map(config.plugins.map((plugin) => [plugin.name, plugin]));
   for (const name of [
     'rocket-launches-proxy',
+    'space-operation-restrictions-proxy',
     'military-installations-proxy',
     'regional-brief-proxy',
     'weather-effects-proxy',
+    'weather-radar-proxy',
   ]) {
     assert.equal(typeof byName.get(name)?.configureServer, 'function', `${name} dev hook`);
     assert.equal(typeof byName.get(name)?.configurePreviewServer, 'function', `${name} preview hook`);

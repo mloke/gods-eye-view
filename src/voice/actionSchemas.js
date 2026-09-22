@@ -141,6 +141,7 @@ const schemas = [
             'sdpd-reports',
             'location-tags',
             'geofence-watch',
+            'weather',
           ],
         },
         enabled: {
@@ -176,6 +177,7 @@ const schemas = [
             'sdpd-reports',
             'location-tags',
             'geofence-watch',
+            'weather',
           ],
         },
       },
@@ -834,6 +836,7 @@ const schemas = [
               'earthquakes',
               'sdpd-reports',
               'location-tags',
+              'weather',
             ],
           },
         },

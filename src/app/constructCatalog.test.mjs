@@ -39,7 +39,7 @@ test('catalogs construct distinct layers and classification from their supplied 
     signal: b.signal,
     surface: fixtureSurface(b.signal),
   });
-  assert.equal(first.layers.length, 26);
+  assert.equal(first.layers.length, 27);
   assert.ok(first.get('solar-system'));
   assert.equal(first.get('solar-system').showInTogglePanel, false);
   assert.ok(first.get('home-command'));
@@ -48,6 +48,7 @@ test('catalogs construct distinct layers and classification from their supplied 
   assert.ok(first.get('sdpd-reports'));
   assert.ok(first.get('location-tags'));
   assert.ok(first.get('geofence-watch'));
+  assert.ok(first.get('weather'));
   const order = first.layers.map(({ id }) => id);
   assert.deepEqual(
     order.slice(order.indexOf('traffic'), order.indexOf('directions') + 1),

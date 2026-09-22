@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { heliocentricPosition, julianDateFromMs } from './ephemeris.js';
+import { heliocentricPosition, julianDateFromMs, liveHeliocentricAu } from './ephemeris.js';
 import { J2000_JD } from './elements.js';
 
 const J2000_MS = (J2000_JD - 2_440_587.5) * 86_400_000;
@@ -28,4 +28,12 @@ test('Mars and Jupiter stay heliocentric and ordered by distance', () => {
   assert.ok(mars.x > 0);
   assert.ok(jupiter.au > mars.au);
   assert.ok(jupiter.au > 4.8 && jupiter.au < 5.6);
+});
+
+test('live heliocentric AU uses the parent planet for moons', () => {
+  const mars = liveHeliocentricAu('mars', J2000_MS);
+  const phobos = liveHeliocentricAu('phobos', J2000_MS);
+  assert.ok(mars > 1.3 && mars < 1.7);
+  assert.equal(phobos, mars);
+  assert.equal(liveHeliocentricAu('sun', J2000_MS), 0);
 });

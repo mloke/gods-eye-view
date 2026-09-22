@@ -10,6 +10,7 @@ import { createLaunchPad } from './launchPad.js';
 import { createCamera } from './camera.js';
 import { createModel } from './model.js';
 import { createRendering } from './rendering.js';
+import { createRestrictions } from './restrictions.js';
 import { createTesting } from './testing.js';
 import { createControls } from './controls.js';
 import { createLifecycle } from './lifecycle.js';
@@ -34,6 +35,7 @@ export function createRocketLaunchesLayer({ services, source }) {
   parts.camera = createCamera(context);
   parts.model = createModel(context);
   parts.rendering = createRendering(context);
+  parts.restrictions = createRestrictions(context);
   parts.testing = createTesting(context);
   parts.controls = createControls(context);
   parts.lifecycle = createLifecycle(context);

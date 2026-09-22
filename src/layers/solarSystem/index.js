@@ -4,7 +4,9 @@ import {
   releaseContinuousRender,
   governorRequestRender,
 } from '../../renderGovernor.js';
+import { getPlanetaryAsset } from '../../data/planetaryAssets.js';
 import { getSolarBody, isSolarBodyId } from '../../solarSystem/bodies.js';
+import { formatSolarSystemHud } from '../../solarSystem/hudReadout.js';
 import {
   enterSolarSystemBody,
   enterSolarSystemOverview,
@@ -18,9 +20,13 @@ import {
 } from './policy.js';
 import { renderSolarSystemPanel } from './panel.js';
 import {
+  flyToSolarAsset,
   flyToSolarBody,
   flyToSolarOverview,
+  pickSolarAssetId,
   pickSolarBodyId,
+  bindSolarGlobeRender,
+  destroySolarGlobes,
   syncSolarEntities,
 } from './rendering.js';
 
@@ -31,6 +37,8 @@ export function createSolarSystemLayer({ services } = {}) {
   let clickHandler = null;
   let enabled = false;
   let focusedBodyId = null;
+  let selectedAssetId = null;
+  let assetFilter = 'all';
   let lastError = null;
   let lastUpdate = null;
   let count = 0;
@@ -53,6 +61,11 @@ export function createSolarSystemLayer({ services } = {}) {
       clickHandler.setInputAction((click) => {
         if (!enabled) return;
         const picked = viewer.scene.pick(click.position);
+        const assetId = pickSolarAssetId(picked);
+        if (assetId) {
+          layer.focusAsset(assetId);
+          return;
+        }
         const bodyId = pickSolarBodyId(picked);
         if (bodyId && bodyId !== 'sun') layer.focusBody(bodyId);
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -65,6 +78,7 @@ export function createSolarSystemLayer({ services } = {}) {
       hideEarthGlobe(viewer);
       flyToSolarOverview(viewer);
       holdContinuousRender('solar-system');
+      bindSolarGlobeRender(viewer.scene);
       layer.update();
       layer.renderPanel();
     },
@@ -72,10 +86,13 @@ export function createSolarSystemLayer({ services } = {}) {
     disable() {
       enabled = false;
       focusedBodyId = null;
+      selectedAssetId = null;
+      assetFilter = 'all';
       if (dataSource) {
         dataSource.entities.removeAll();
         dataSource.show = false;
       }
+      if (viewer && !viewer.isDestroyed?.()) destroySolarGlobes(viewer.scene);
       releaseContinuousRender('solar-system');
       if (viewer && !viewer.isDestroyed?.())
         exitSolarSystem(viewer, { restoreGlobeView: true });
@@ -90,8 +107,10 @@ export function createSolarSystemLayer({ services } = {}) {
         const epochMs = Date.now();
         count = syncSolarEntities({
           dataSource,
+          scene: viewer.scene,
           epochMs,
           focusedBodyId,
+          selectedAssetId,
           showAssets: true,
         });
         lastUpdate = epochMs;
@@ -122,6 +141,7 @@ export function createSolarSystemLayer({ services } = {}) {
       const body = getSolarBody(bodyId);
       if (!body || body.id === 'sun') return false;
       focusedBodyId = body.id;
+      selectedAssetId = null;
       enterSolarSystemBody(viewer, body.id);
       flyToSolarBody(viewer, body.id, Date.now());
       if (enabled) {
@@ -133,6 +153,7 @@ export function createSolarSystemLayer({ services } = {}) {
 
     focusSystem() {
       focusedBodyId = null;
+      selectedAssetId = null;
       enterSolarSystemOverview(viewer);
       flyToSolarOverview(viewer);
       if (enabled) {
@@ -146,10 +167,58 @@ export function createSolarSystemLayer({ services } = {}) {
       return focusedBodyId;
     },
 
+    getSelectedAssetId() {
+      return selectedAssetId;
+    },
+
+    getHudReadout() {
+      return formatSolarSystemHud({
+        focusedBodyId,
+        selectedAssetId,
+      });
+    },
+
+    focusAsset(assetId) {
+      const asset = getPlanetaryAsset(assetId);
+      if (!asset) return false;
+      if (selectedAssetId === asset.id) {
+        selectedAssetId = null;
+        if (enabled) {
+          layer.update();
+          layer.renderPanel();
+        }
+        return true;
+      }
+      selectedAssetId = asset.id;
+      if (asset.bodyId !== 'sun' && focusedBodyId !== asset.bodyId) {
+        focusedBodyId = asset.bodyId;
+        enterSolarSystemBody(viewer, asset.bodyId);
+      }
+      flyToSolarAsset(viewer, asset.id, Date.now());
+      if (enabled) {
+        layer.update();
+        layer.renderPanel();
+      }
+      return true;
+    },
+
+    setAssetFilter(filter) {
+      const next = String(filter || 'all').trim().toLowerCase();
+      assetFilter = ['all', 'active', 'ended', 'orbiter', 'surface'].includes(next)
+        ? next
+        : 'all';
+      if (enabled) layer.renderPanel();
+      return true;
+    },
+
     renderPanel() {
       renderSolarSystemPanel(document.getElementById('solar-system-panel-host'), {
         focusedBodyId,
+        selectedAssetId,
+        assetFilter,
         onSelect: (id) => layer.focusBody(id),
+        onSelectAsset: (id) => layer.focusAsset(id),
+        onFilter: (filter) => layer.setAssetFilter(filter),
         onBack: () => layer.focusSystem(),
       });
     },
@@ -160,6 +229,8 @@ export function createSolarSystemLayer({ services } = {}) {
         lastUpdate,
         error: lastError,
         focusedBodyId,
+        selectedAssetId,
+        assetFilter,
       };
     },
 

@@ -13,7 +13,7 @@ test('launch sources preserve last-good eligibility by rejecting malformed snaps
 });
 
 test('launch and active-orbit responses reject cancellation during parsing', async () => {
-  for (const method of ['getLaunches', 'getActiveTle']) {
+  for (const method of ['getLaunches', 'getActiveTle', 'getSpaceRestrictions']) {
     const controller = new AbortController();
     const source = createLaunchSource({
       fetchImpl: async () => ({
@@ -32,6 +32,16 @@ test('launch and active-orbit responses reject cancellation during parsing', asy
       name: 'AbortError',
     });
   }
+});
+
+test('space restriction snapshots reject a missing notice list', async () => {
+  const source = createLaunchSource({
+    fetchImpl: async () => new Response(JSON.stringify({ notices: null })),
+  });
+  await assert.rejects(
+    source.getSpaceRestrictions(),
+    /Malformed space restriction snapshot/,
+  );
 });
 
 test('launch factories construct independently without starting a scene or source request', () => {

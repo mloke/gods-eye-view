@@ -117,6 +117,58 @@ export function normalizeRegionalWeather(payload) {
   };
 }
 
+function asList(value) {
+  return Array.isArray(value) ? value : value == null ? [] : [value];
+}
+
+function pickIndexed(value, index) {
+  return Array.isArray(value) ? value[index] : value;
+}
+
+/**
+ * Normalize one or many Open-Meteo current-condition payloads into sample rows
+ * stamped with the requested coordinates.
+ */
+export function normalizeRegionalWeatherMany(payload, points = []) {
+  if (Array.isArray(payload)) {
+    return payload.flatMap((row, index) => {
+      const weather = normalizeRegionalWeather(row);
+      if (!weather) return [];
+      const lat = Number(row?.latitude ?? points[index]?.latitude);
+      const lon = Number(row?.longitude ?? points[index]?.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
+      return [{ ...weather, lat, lon }];
+    });
+  }
+  const lats = asList(payload?.latitude);
+  const lons = asList(payload?.longitude);
+  const count = Math.max(lats.length, points.length, 1);
+  const current = payload?.current;
+  if (!current) return [];
+  const rows = [];
+  for (let index = 0; index < count; index++) {
+    const weather = normalizeRegionalWeather({
+      current: {
+        time: pickIndexed(current.time, index),
+        temperature_2m: pickIndexed(current.temperature_2m, index),
+        apparent_temperature: pickIndexed(current.apparent_temperature, index),
+        precipitation: pickIndexed(current.precipitation, index),
+        weather_code: pickIndexed(current.weather_code, index),
+        cloud_cover: pickIndexed(current.cloud_cover, index),
+        wind_speed_10m: pickIndexed(current.wind_speed_10m, index),
+        wind_direction_10m: pickIndexed(current.wind_direction_10m, index),
+        visibility: pickIndexed(current.visibility, index),
+      },
+    });
+    if (!weather) continue;
+    const lat = Number(lats[index] ?? points[index]?.latitude);
+    const lon = Number(lons[index] ?? points[index]?.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    rows.push({ ...weather, lat, lon });
+  }
+  return rows;
+}
+
 /** Translate the WMO weather code used by Open-Meteo into concise cockpit copy. */
 export function weatherCodeLabel(code) {
   const value = Number(code);

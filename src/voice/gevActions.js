@@ -253,6 +253,10 @@ const LAYER_ALIASES = new Map([
   ['geofence watch', 'geofence-watch'],
   ['watch zone', 'geofence-watch'],
   ['alerts', 'geofence-watch'],
+  ['weather', 'weather'],
+  ['weather layer', 'weather'],
+  ['current weather', 'weather'],
+  ['conditions', 'weather'],
 ]);
 
 const CITY_ALIASES = new Map([
@@ -4212,6 +4216,7 @@ function layerTitle(layerId) {
   if (layerId === 'sdpd-reports') return 'SDPD Report';
   if (layerId === 'location-tags') return 'Tagged Place';
   if (layerId === 'geofence-watch') return 'Watch Event';
+  if (layerId === 'weather') return 'Weather';
   return layerId || 'Entity';
 }
 

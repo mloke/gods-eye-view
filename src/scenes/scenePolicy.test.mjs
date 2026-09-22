@@ -64,6 +64,7 @@ const REGISTERED = new Set([
   'sdpd-reports',
   'location-tags',
   'geofence-watch',
+  'weather',
 ]);
 
 test('a shot only reconciles the layers it declares', () => {
